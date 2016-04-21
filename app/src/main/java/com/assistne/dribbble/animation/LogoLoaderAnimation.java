@@ -7,12 +7,8 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AnticipateInterpolator;
 import android.view.animation.LinearInterpolator;
 
 import com.assistne.dribbble.R;
@@ -26,50 +22,27 @@ public class LogoLoaderAnimation extends View{
     private boolean mIsSpotDrawing;
     private boolean mIsDrawingLine;
     private boolean mIsShowing;
+    private boolean mIsDrawingTail;
 
-    //  线段粗细
-    private final float mPaintWidth = 16;
-    //  直线距竖直方向的夹角值
-    private final float mLineSinA = 0.62f;
-    private final float mLineCosA = 0.78f;
-    //  圆弧的角度范围(单位度)
-    private final float mDegreeRange = 220f;
-    //  圆弧的起始角度(单位度), 水平位置为0度
-    private final float mStartDegree = 320f;
-
-    private float mDegree;
     private Paint mCirclePaint;
-    private Paint mPink;
-    private Paint mGreen;
-    private RectF mRectF;
-    private RectF mGreenRectF;
-    private boolean mPinkFlag;
+    private Paint mMainPaint;
     private AnimatorSet mAnimatorSet;
-    private ValueAnimator mPinkAnimator;
-    //  当前图形起点, 用作画起点圆点
-    private float mGreenHeadX;
-    private float mGreenHeadY;
-    //  当前图形末端, 用作画末端圆点
-    private float mGreenTailX;
-    private float mGreenTailY;
-    //  当前直线的动态位置
-    private float mGreenLineX;
-    private float mGreenLineY;
+
+    private final long mLineSpeed = 700;
+    private final long mArcSpeed = 850;
     //  直线长度
-    private final float mGreenLineLen = 100f;
+    private final float mLineLen = 100f;
+
+    private PointContainer mGreenContainer;
+    private PointContainer mPinkContainer1;
+    private PointContainer mPinkContainer2;
+
     //  直线起始位置
     private final float mGreenLineStartX = 300f;
     private final float mGreenLineStartY = 300f;
-    //  直线的结束位置
-    private final float mGreenLineEndX = mLineSinA * mGreenLineLen + mGreenLineStartX;
-    private final float mGreenLineEndY = mLineCosA * mGreenLineLen + mGreenLineStartY;
-
-    private final long mLineSpeed = 350;
-    private final long mArcSpeed = 550;
-
-    private final float mGreenR = mGreenLineLen * mLineSinA / mLineCosA;
+    private final float mGreenR = mLineLen * PointContainer.SIN_ALPHA / PointContainer.COS_ALPHA;
     private final float mCircleCenterX = mGreenLineStartX;
-    private final float mCircleCenterY = mGreenLineLen / mLineCosA + mGreenLineStartY;
+    private final float mCircleCenterY = mLineLen / PointContainer.COS_ALPHA + mGreenLineStartY;
 
     public LogoLoaderAnimation(Context context) {
         this(context, null);
@@ -81,14 +54,25 @@ public class LogoLoaderAnimation extends View{
 
     public LogoLoaderAnimation(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mRectF = new RectF(150f, 100f, 450f, 400f);
-        mCirclePaint = new Paint();
+        initPaint();
+        mGreenContainer = new PointContainer(mGreenLineStartX, mGreenLineStartY, mLineLen,
+                mCircleCenterX, mCircleCenterY, mGreenR);
+        final float mPinkLineStartX1 = mGreenLineStartX + (PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN) * PointContainer.COS_ALPHA;
+        final float mPinkLineStartY1 = mGreenLineStartY - (PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN) * PointContainer.SIN_ALPHA;
+        final float mPinkR1 = mGreenR + PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN;
+        mPinkContainer1 = new PointContainer(mPinkLineStartX1, mPinkLineStartY1, mLineLen,
+                mCircleCenterX, mCircleCenterY, mPinkR1);
+        mPinkContainer1.hasTailArc = true;
+        mPinkContainer1.tailStartDegree = 0;
 
-        mPink = new Paint();
-        mPink.setAntiAlias(true);
-        mPink.setStyle(Paint.Style.STROKE);
-        mPink.setStrokeWidth(mPaintWidth);
-        mPink.setColor(context.getResources().getColor(R.color.pink));
+        final float mPinkLineStartX2 = mPinkLineStartX1 + (PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN) * PointContainer.COS_ALPHA;
+        final float mPinkLineStartY2 = mPinkLineStartY1 - (PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN) * PointContainer.SIN_ALPHA;
+        final float mPinkR2 = mPinkR1 + PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN;
+        mPinkContainer2 = new PointContainer(mPinkLineStartX2, mPinkLineStartY2, mLineLen,
+                mCircleCenterX, mCircleCenterY, mPinkR2);
+        mPinkContainer2.hasTailArc = true;
+        mPinkContainer2.tailStartDegree = 180;
+
         mAnimatorSet = new AnimatorSet();
         mAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -98,80 +82,74 @@ public class LogoLoaderAnimation extends View{
             }
 
         });
-        initGreenAnimator();
         mAnimatorSet.setInterpolator(new LinearInterpolator());
-        mPinkAnimator = ValueAnimator.ofFloat(0, 360);
-        mPinkAnimator.setDuration(5000);
-        mPinkAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        mPinkAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mDegree = (float) animation.getAnimatedValue();
-                invalidate();
-            }
-        });
-        mPinkAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-                mPinkFlag = !mPinkFlag;
-                Log.d(TAG, "onAnimationRepeat: " + mPinkFlag);
-            }
-        });
+        initAnimator();
     }
 
-    private void initGreenAnimator() {
-        mGreenRectF = new RectF(mCircleCenterX - mGreenR, mCircleCenterY - mGreenR,
-                mCircleCenterX + mGreenR, mCircleCenterY + mGreenR);
-        mGreen = new Paint();
-        mGreen.setAntiAlias(true);
-        mGreen.setStyle(Paint.Style.STROKE);
-        mGreen.setStrokeWidth(mPaintWidth);
-        mGreen.setColor(getContext().getResources().getColor(R.color.green));
+    private void initPaint() {
+        mCirclePaint = new Paint();
+        mMainPaint = new Paint();
+        mMainPaint.setAntiAlias(true);
+        mMainPaint.setStyle(Paint.Style.STROKE);
+        mMainPaint.setStrokeWidth(PointContainer.PAINT_WIDTH);
+        mMainPaint.setColor(getContext().getResources().getColor(R.color.green));
+    }
+
+    private void initAnimator() {
         ValueAnimator lineAnimator = ValueAnimator.ofFloat(0, 1);
         lineAnimator.setDuration(mLineSpeed);
         lineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue() * mGreenLineLen;
-                mGreenLineX = mLineSinA * value + mGreenLineStartX;
-                mGreenLineY = mLineCosA * value + mGreenLineStartY;
-                mGreenHeadX = mGreenLineStartX;
-                mGreenHeadY = mGreenLineStartY;
-                mGreenTailX = mGreenLineX;
-                mGreenTailY = mGreenLineY;
+                mGreenContainer.showLine((float) animation.getAnimatedValue());
+                mPinkContainer1.showLine((float) animation.getAnimatedValue());
+                mPinkContainer2.showLine((float) animation.getAnimatedValue());
                 mIsSpotDrawing = false;
                 mIsDrawingLine = true;
                 mIsShowing = true;
+                mIsDrawingTail = false;
                 invalidate();
             }
         });
 
-        ValueAnimator arcAnimator = ValueAnimator.ofFloat(0, mDegreeRange);
+        ValueAnimator arcAnimator = ValueAnimator.ofFloat(0, PointContainer.DEGREE_RANGE);
         arcAnimator.setDuration(mArcSpeed);
         arcAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mDegree = (float) animation.getAnimatedValue();
-                //  计算弧的动点位置, 用作图形末端
-                float deltaDegree = (360f - mStartDegree) - mDegree;// 40 -> 0 -> -180
-                mGreenTailX = (float) (mGreenR * Math.cos(deltaDegree * Math.PI / 180)) + mCircleCenterX;
-                mGreenTailY = mCircleCenterY - (float) (mGreenR * Math.sin(deltaDegree * Math.PI / 180));
+                mGreenContainer.showArc((float) animation.getAnimatedValue());
+                mPinkContainer1.showArc((float) animation.getAnimatedValue());
+                mPinkContainer2.showArc((float) animation.getAnimatedValue());
                 mIsDrawingLine = false;
                 mIsShowing = true;
+                mIsDrawingTail = false;
+                invalidate();
+            }
+        });
+
+        ValueAnimator arcTailAnimator = ValueAnimator.ofFloat(0, 90);
+        arcTailAnimator.setDuration(500);
+        arcTailAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float degree = (float) animation.getAnimatedValue();
+                if (!mIsDrawingTail) {
+                    float circleX = (mPinkContainer1.currentTailX + mPinkContainer2.currentTailX)/2;
+                    float circleY = mPinkContainer1.currentTailY;
+                    float radius = (mPinkContainer1.currentTailX - mPinkContainer2.currentTailX)/2;
+                    mPinkContainer1.setTailPoint(circleX, circleY, radius);
+                    mPinkContainer2.setTailPoint(circleX, circleY, radius);
+                }
+                mPinkContainer1.tailStartDegree = 360 - degree;
+                mPinkContainer2.tailStartDegree = 180;
+                mPinkContainer1.showTailArc(degree);
+                mPinkContainer2.showTailArc(degree);
+                mPinkContainer1.currentTailX = (float) (mPinkContainer1.tailCircleX + mPinkContainer1.tailRadius * Math.cos(degree * Math.PI / 180));
+                mPinkContainer1.currentTailY = (float) (mPinkContainer1.tailCircleY - mPinkContainer1.tailRadius * Math.sin(degree * Math.PI / 180));
+                mPinkContainer2.currentTailX = (float) (mPinkContainer2.tailCircleX - mPinkContainer2.tailRadius * Math.cos(degree * Math.PI / 180));
+                mPinkContainer2.currentTailY = (float) (mPinkContainer2.tailCircleY - mPinkContainer2.tailRadius * Math.sin(degree * Math.PI / 180));
+                mIsSpotDrawing = false;
+                mIsDrawingTail = true;
                 invalidate();
             }
         });
@@ -181,31 +159,49 @@ public class LogoLoaderAnimation extends View{
         lineHideAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue() * mGreenLineLen;
-                mGreenLineX = mLineSinA * value + mGreenLineStartX;
-                mGreenLineY = mLineCosA * value + mGreenLineStartY;
-                mGreenHeadX = mGreenLineX;
-                mGreenHeadY = mGreenLineY;
+                mGreenContainer.hideLine((float) animation.getAnimatedValue());
+                mPinkContainer1.hideLine((float) animation.getAnimatedValue());
+                mPinkContainer2.hideLine((float) animation.getAnimatedValue());
                 mIsSpotDrawing = false;
                 mIsDrawingLine = true;
                 mIsShowing = false;
+                mIsDrawingTail = true;
                 invalidate();
             }
         });
 
-        ValueAnimator arcHideAnimator = ValueAnimator.ofFloat(0, mDegreeRange);
+        ValueAnimator arcTailHideAnimator = ValueAnimator.ofFloat(0, 90);
+        arcTailHideAnimator.setDuration(1500);
+        arcTailHideAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float degree = (float) animation.getAnimatedValue();
+                mPinkContainer1.tailStartDegree = 270;
+                mPinkContainer2.tailStartDegree = 180;
+                mPinkContainer1.showTailArc(degree);
+                mPinkContainer2.showTailArc(degree);
+                mPinkContainer1.currentTailX = (float) (mPinkContainer1.tailCircleX + mPinkContainer1.tailRadius * Math.cos((90 - degree) * Math.PI / 180));
+                mPinkContainer1.currentTailY = (float) (mPinkContainer1.tailCircleY - mPinkContainer1.tailRadius * Math.sin((90 - degree) * Math.PI / 180));
+                mPinkContainer2.currentTailX = (float) (mPinkContainer2.tailCircleX - mPinkContainer2.tailRadius * Math.cos((90 - degree) * Math.PI / 180));
+                mPinkContainer2.currentTailY = (float) (mPinkContainer2.tailCircleY - mPinkContainer2.tailRadius * Math.sin((90 - degree) * Math.PI / 180));
+                mIsSpotDrawing = false;
+                mIsDrawingTail = true;
+                invalidate();
+            }
+        });
+
+        ValueAnimator arcHideAnimator = ValueAnimator.ofFloat(0, PointContainer.DEGREE_RANGE);
         arcHideAnimator.setDuration(mArcSpeed);
         arcHideAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mDegree = (float) animation.getAnimatedValue();
-                //  计算弧的动点位置, 用作图形起点
-                float deltaDegree = (360f - mStartDegree) - mDegree;// 40 -> 0 -> -180
-                mGreenHeadX = (float) (mGreenR * Math.cos(deltaDegree * Math.PI / 180)) + mCircleCenterX;
-                mGreenHeadY = mCircleCenterY - (float) (mGreenR * Math.sin(deltaDegree * Math.PI / 180));
+                mGreenContainer.hideArc((float) animation.getAnimatedValue());
+                mPinkContainer1.hideArc((float) animation.getAnimatedValue());
+                mPinkContainer2.hideArc((float) animation.getAnimatedValue());
                 mIsSpotDrawing = false;
                 mIsDrawingLine = false;
                 mIsShowing = false;
+                mIsDrawingTail = true;
                 invalidate();
             }
         });
@@ -215,70 +211,75 @@ public class LogoLoaderAnimation extends View{
         spotLineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue() * mGreenLineLen;
-                mGreenHeadX = mGreenTailX - mLineSinA * value;
-                mGreenHeadY = mGreenTailY - mLineCosA * value;
+                mGreenContainer.showSpotLine((float) animation.getAnimatedValue());
+                mPinkContainer1.showSpotLine((float) animation.getAnimatedValue());
+                mPinkContainer2.showSpotLine((float) animation.getAnimatedValue());
                 mIsSpotDrawing = true;
+                mIsDrawingTail = false;
                 invalidate();
             }
         });
 
-        final float mirrorCenterX = mGreenLineStartX - mGreenR;
-        final float mirrorCenterY = mGreenLineStartY;
-        ValueAnimator spotArcAnimator = ValueAnimator.ofFloat(0, mDegreeRange);
+        ValueAnimator spotArcAnimator = ValueAnimator.ofFloat(0, PointContainer.DEGREE_RANGE);
         spotArcAnimator.setDuration(mArcSpeed);
         spotArcAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float degree = (float) animation.getAnimatedValue();
-                //  计算弧的动点位置, 用作图形末端
-                float deltaDegree = mDegreeRange - degree;// 220 -> 0
-                mGreenHeadX = (float) (mGreenR * Math.cos(deltaDegree * Math.PI / 180)) + mirrorCenterX;
-                mGreenHeadY = mirrorCenterY - (float) (mGreenR * Math.sin(deltaDegree * Math.PI / 180));
+                mGreenContainer.showSpotArc((float) animation.getAnimatedValue());
+                mPinkContainer1.showSpotArc((float) animation.getAnimatedValue());
+                mPinkContainer2.showSpotArc((float) animation.getAnimatedValue());
                 mIsSpotDrawing = true;
+                mIsDrawingTail = false;
                 invalidate();
             }
         });
         mAnimatorSet.playSequentially(
-                lineAnimator, arcAnimator,
-                lineHideAnimator, arcHideAnimator,
+                lineAnimator, arcAnimator, arcTailAnimator,
+                lineHideAnimator, arcHideAnimator, //arcTailHideAnimator,
                 spotLineAnimator, spotArcAnimator);
     }
 
-    private void onDrawGreen(Canvas canvas) {
+    private void onDrawContainer(Canvas canvas, PointContainer container, int color) {
+        mCirclePaint.setColor(color);
+        mMainPaint.setColor(color);
         if (!mIsSpotDrawing) {
-            mCirclePaint.setColor(mGreen.getColor());
             //  起点圆点
-            canvas.drawCircle(mGreenHeadX, mGreenHeadY, mPaintWidth/2, mCirclePaint);
+            canvas.drawCircle(container.currentHeadX, container.currentHeadY, PointContainer.PAINT_WIDTH/2, mCirclePaint);
             if (mIsShowing) {// 显示图形
                 //  画线
-                canvas.drawLine(mGreenLineStartX, mGreenLineStartY, mGreenLineX, mGreenLineY, mGreen);
+                canvas.drawLine(container.lineStartX, container.lineStartY,
+                        container.currentLineX, container.currentLineY, mMainPaint);
                 if (!mIsDrawingLine) {//  进入画弧阶段
                     //  画弧
-                    canvas.drawArc(mGreenRectF, mStartDegree, mDegree, false, mGreen);
+                    canvas.drawArc(container.circleRectF, PointContainer.START_DEGREE, container.sweepDegree, false, mMainPaint);
                 }
             } else {//  隐藏图形
                 if (mIsDrawingLine) {
-                    canvas.drawLine(mGreenLineX, mGreenLineY, mGreenLineEndX, mGreenLineEndY, mGreen);
-                    canvas.drawArc(mGreenRectF, mStartDegree, mDegree, false, mGreen);
+                    canvas.drawLine(container.currentLineX, container.currentLineY,
+                            container.lineEndX, container.lineEndY, mMainPaint);
+                    canvas.drawArc(container.circleRectF, PointContainer.START_DEGREE, container.sweepDegree, false, mMainPaint);
                 } else {
-                    canvas.drawArc(mGreenRectF, mStartDegree + mDegree, mDegreeRange - mDegree, false, mGreen);
+                    canvas.drawArc(container.circleRectF, PointContainer.START_DEGREE + container.sweepDegree,
+                            PointContainer.DEGREE_RANGE - container.sweepDegree, false, mMainPaint);
                 }
             }
+            if (mIsDrawingTail && container.hasTailArc) {
+                canvas.drawArc(container.tailCircleRectF, container.tailStartDegree, container.tailSweepDegree, false, mMainPaint);
+            }
             //  画末端的圆点
-            canvas.drawCircle(mGreenTailX, mGreenTailY, mPaintWidth/2, mCirclePaint);
+            canvas.drawCircle(container.currentTailX, container.currentTailY, PointContainer.PAINT_WIDTH/2, mCirclePaint);
         } else {
-            canvas.drawCircle(mGreenHeadX, mGreenHeadY, mPaintWidth/2, mCirclePaint);
+            canvas.drawCircle(container.currentHeadX, container.currentHeadY, PointContainer.PAINT_WIDTH/2, mCirclePaint);
         }
     }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        onDrawGreen(canvas);
-        mPink.setStyle(Paint.Style.FILL);
-        mPink.setStrokeWidth(1);
-        canvas.drawCircle(mGreenLineStartX, mGreenLineStartY, mPaintWidth/2, mPink);
+        onDrawContainer(canvas, mGreenContainer, getContext().getResources().getColor(R.color.green));
+        onDrawContainer(canvas, mPinkContainer1, getContext().getResources().getColor(R.color.pink));
+        onDrawContainer(canvas, mPinkContainer2, getContext().getResources().getColor(R.color.pink));
     }
 
     @Override
