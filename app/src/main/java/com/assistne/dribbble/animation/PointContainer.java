@@ -1,46 +1,42 @@
 package com.assistne.dribbble.animation;
 
+import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
 
 /**
  * Created by assistne on 16/4/21.
  */
 public class PointContainer {
-
+    private static final String TAG = "#PointContainer";
     //  线段粗细
     public static final float PAINT_WIDTH = 16;
     //  线段间隔
     public static final float LINE_MARGIN = 11;
-    //  直线距竖直方向的夹角值
-    public static final float SIN_ALPHA = 0.62f;
-    public static final float COS_ALPHA = 0.78f;
-    //  圆弧的角度范围(单位度)
-    public static final float DEGREE_RANGE = 220f;
-    //  圆弧的起始角度(单位度), 水平位置为0度
-    public static final float START_DEGREE = 320f;
+
+    /**
+     * Android角度, 顺时针为正, 0-360度*/
+    public final float startDegree;
+    public final float degreeRange;
+    public final float sinAlpha;
+    public final float cosAlpha;
     //  直线长度
     public final float lineLength;
+    public final float lineXRange;
     //  弧度的圆心
-    public final float circleCenterX;
-    public final float circleCenterY;
+    public final PointF circleCenter;
     //  弧度的半径
     public final float circleRadius;
     //  直线起始位置
-    public final float lineStartX;
-    public final float lineStartY;
+    public final PointF lineStart;
     //  直线的结束位置
-    public final float lineEndX;
-    public final float lineEndY;
-
+    public final PointF lineEnd;
     //  当前图形起点, 用作画起点圆点
-    public float currentHeadX;
-    public float currentHeadY;
+    public PointF head = new PointF();
     //  当前图形末端, 用作画末端圆点
-    public float currentTailX;
-    public float currentTailY;
+    public PointF tail = new PointF();
     //  当前直线的动态位置
-    public float currentLineX;
-    public float currentLineY;
+    public PointF currentLine = new PointF();
     //  弧度扫过的角度(单位度)
     public float sweepDegree;
 
@@ -54,37 +50,41 @@ public class PointContainer {
     public float tailCircleY;
     public float tailRadius;
 
-    public PointContainer(float lineStartX, float lineStartY, float lineLength,
-                          float circleCenterX, float circleCenterY, float circleRadius) {
-        this.lineStartX = lineStartX;
-        this.lineStartY = lineStartY;
+    /**
+     * @param lineDegree 直线与x轴正方向的夹角 0-180度*/
+    public PointContainer(float lineStartX, float lineStartY, float lineLength, float lineDegree,
+                          float circleCenterX, float circleCenterY, float circleRadius, float circleStartDegree,
+                          float circleDegreeRange) {
+        lineStart = new PointF(lineStartX, lineStartY);
         this.lineLength = lineLength;
-        //  直线的结束位置
-        lineEndX = SIN_ALPHA * lineLength + lineStartX;
-        lineEndY = COS_ALPHA * lineLength + lineStartY;
-
-        this.circleCenterX = circleCenterX;
-        this.circleCenterY = circleCenterY;
+        this.sinAlpha = (float) Math.sin(Math.toRadians(lineDegree));
+        this.cosAlpha = (float) Math.cos(Math.toRadians(lineDegree));
+        lineXRange = Math.abs(cosAlpha * lineLength);
+        lineEnd = new PointF(sinAlpha * lineLength + lineStartX, cosAlpha * lineLength + lineStartY);
+        this.startDegree = circleStartDegree;
+        this.degreeRange = circleDegreeRange;
+        circleCenter = new PointF(circleCenterX, circleCenterY);
         this.circleRadius = circleRadius;
         circleRectF = new RectF(circleCenterX - circleRadius, circleCenterY - circleRadius,
                 circleCenterX + circleRadius, circleCenterY + circleRadius);
         tailCircleRectF = new RectF();
     }
 
+    /**
+     * @param fraction 正值表示向右移动, 负值向左*/
     public void showLine(float fraction) {
-        float value = fraction * lineLength;
-        currentTailX = currentLineX = SIN_ALPHA * value + lineStartX;
-        currentTailY = currentLineY = COS_ALPHA * value + lineStartY;
-        currentHeadX = lineStartX;
-        currentHeadY = lineStartY;
+        float deltaX = fraction * lineXRange;
+        currentLine.x = lineStart.x + deltaX;
+        currentLine.y = line(deltaX, lineStart.y);
+        tail.set(currentLine);
+        head.set(lineStart);
     }
 
     public void showArc(float degree) {
         sweepDegree = degree;
-        //  计算弧的动点位置, 用作图形末端
-        float deltaDegree = (360f - START_DEGREE) - sweepDegree;// 40 -> 0 -> -180
-        currentTailX = (float) (circleRadius * Math.cos(deltaDegree * Math.PI / 180)) + circleCenterX;
-        currentTailY = circleCenterY - (float) (circleRadius * Math.sin(deltaDegree * Math.PI / 180));
+        //  转换角度
+        float deltaDegree = 360f - startDegree - sweepDegree;
+        tail.set(circle(deltaDegree, circleCenter.x, circleCenter.y));
     }
 
     public void showTailArc(float degree) {
@@ -92,32 +92,31 @@ public class PointContainer {
     }
 
     public void hideLine(float fraction) {
-        float value = fraction * lineLength;
-        currentHeadX = currentLineX = SIN_ALPHA * value + lineStartX;
-        currentHeadY = currentLineY = COS_ALPHA * value + lineStartY;
+        float deltaX = fraction * lineXRange;
+        currentLine.x = lineStart.x + deltaX;
+        currentLine.y = line(deltaX, lineStart.y);
+        head.set(currentLine);
     }
 
     public void hideArc(float degree) {
         sweepDegree = degree;
-        //  计算弧的动点位置, 用作图形起点
-        float deltaDegree = (360f - START_DEGREE) - degree;// 40 -> 0 -> -180
-        currentHeadX = (float) (circleRadius * Math.cos(deltaDegree * Math.PI / 180)) + circleCenterX;
-        currentHeadY = circleCenterY - (float) (circleRadius * Math.sin(deltaDegree * Math.PI / 180));
+        //  转换角度
+        float deltaDegree = 360f - startDegree - sweepDegree;
+        head.set(circle(deltaDegree, circleCenter.x, circleCenter.y));
     }
 
     public void showSpotLine(float fraction) {
-        float value = fraction * lineLength;
-        currentHeadX = currentTailX - SIN_ALPHA * value;
-        currentHeadY = currentTailY - COS_ALPHA * value;
+        float deltaX = fraction * lineXRange;
+        head.x = tail.x + deltaX;
+        head.y = line(deltaX, tail.y);
     }
 
     public void showSpotArc(float degree) {
-        final float mirrorCenterX = lineStartX - circleRadius;
-        final float mirrorCenterY = lineStartY;
+        final float mirrorCenterX = lineStart.x - circleRadius;
+        final float mirrorCenterY = lineStart.y;
         //  计算弧的动点位置, 用作图形末端
-        final float deltaDegree = DEGREE_RANGE - degree;// 220 -> 0
-        currentHeadX = (float) (circleRadius * Math.cos(deltaDegree * Math.PI / 180)) + mirrorCenterX;
-        currentHeadY = mirrorCenterY - (float) (circleRadius * Math.sin(deltaDegree * Math.PI / 180));
+        final float deltaDegree = degreeRange - degree;// 220 -> 0
+        head.set(circle(deltaDegree, mirrorCenterX, mirrorCenterY));
     }
 
     public void setTailPoint(float circleX, float circleY, float radius) {
@@ -125,5 +124,20 @@ public class PointContainer {
         tailCircleY = circleY;
         tailRadius = radius;
         tailCircleRectF = new RectF(circleX - radius, circleY - radius, circleX + radius, circleY + radius);
+    }
+
+    /**
+     * 计算在直线范围内, 点从起始坐标水平移动deltaX距离后y的屏幕坐标系坐标*/
+    private float line(float deltaX, float y) {
+        return y - (sinAlpha / cosAlpha) * deltaX;
+    }
+
+    /**
+     * 根据过坐标的半径与X轴正方向的夹角计算屏幕坐标值
+     * @param degree 逆时针为正方向, 0-360度*/
+    private PointF circle(float degree, float circleX, float circleY) {
+        float x = (float) (circleX + circleRadius * Math.cos(Math.toRadians(degree)));
+        float y = (float) (circleY - circleRadius * Math.sin(Math.toRadians(degree)));
+        return new PointF(x, y);
     }
 }
