@@ -3,8 +3,8 @@ package com.assistne.dribbble.animation;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
-import android.util.Log;
-import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 
 /**
  * Created by assistne on 16/4/24.
@@ -16,15 +16,15 @@ public class PointAnimator {
     private AnimatorSet mHideAnimatorSet;
     private AnimatorSet mSpotAnimatorSet;
 
-    private final long mLineSpeed = 400;
-    private final long mArcSpeed = 900;
-    private final long mTailSpeed = 200;
+    private final long mLineSpeed = 200;
+    private final long mArcSpeed;// = 1100;
+    private final long mTailSpeed = 100;
     private long mDelay;
 
     public PointAnimator(PointContainer pointContainer, long delay) {
         mDelay = delay;
         mPointContainer = pointContainer;
-//        mArcSpeed = (long) (mLineSpeed * mPointContainer.arcLength() / mPointContainer.lineLength);
+        mArcSpeed = (long) (mLineSpeed * mPointContainer.arcLength() / mPointContainer.lineLength);
         mShowAnimatorSet = new AnimatorSet();
         mHideAnimatorSet = new AnimatorSet();
         mSpotAnimatorSet = new AnimatorSet();
@@ -36,13 +36,13 @@ public class PointAnimator {
         set.playTogether(initHideArcAnimator(), initHideTailAnimator());
         mShowAnimatorSet.playSequentially(initShowLineAnimator(), initShowArcAnimator(), initShowTailAnimator());
         mHideAnimatorSet.playSequentially(initHideLineAnimator(), set);
-        mSpotAnimatorSet.playSequentially(initSpotLineAnimator(), initSpotArcAnimator());
+        mSpotAnimatorSet.playSequentially(initSpotCircleAnimator());//initSpotLineAnimator(), initSpotArcAnimator());
     }
 
     private Animator initShowLineAnimator() {
         ValueAnimator lineAnimator = ValueAnimator.ofFloat(0, 1);
         lineAnimator.setDuration(mLineSpeed);
-        lineAnimator.setInterpolator(new AccelerateInterpolator());
+        lineAnimator.setInterpolator(new LinearInterpolator());
         lineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -59,7 +59,7 @@ public class PointAnimator {
     private Animator initShowArcAnimator() {
         ValueAnimator arcAnimator = ValueAnimator.ofFloat(0, 1);
         arcAnimator.setDuration(mArcSpeed);
-        arcAnimator.setInterpolator(new AccelerateInterpolator());
+        arcAnimator.setInterpolator(new LinearInterpolator());
         arcAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -73,7 +73,7 @@ public class PointAnimator {
     private Animator initShowTailAnimator() {
         ValueAnimator arcTailAnimator = ValueAnimator.ofFloat(0, 1);
         arcTailAnimator.setDuration(mTailSpeed);
-        arcTailAnimator.setInterpolator(new AccelerateInterpolator());
+        arcTailAnimator.setInterpolator(new LinearInterpolator());
         arcTailAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -87,7 +87,7 @@ public class PointAnimator {
     private Animator initHideLineAnimator() {
         ValueAnimator lineHideAnimator = ValueAnimator.ofFloat(0, 1);
         lineHideAnimator.setDuration(mLineSpeed);
-        lineHideAnimator.setInterpolator(new AccelerateInterpolator());
+        lineHideAnimator.setInterpolator(new LinearInterpolator());
         lineHideAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -105,7 +105,7 @@ public class PointAnimator {
     private Animator initHideArcAnimator() {
         ValueAnimator arcHideAnimator = ValueAnimator.ofFloat(0, 1);
         arcHideAnimator.setDuration(mArcSpeed);
-        arcHideAnimator.setInterpolator(new AccelerateInterpolator());
+        arcHideAnimator.setInterpolator(new LinearInterpolator());
         arcHideAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -119,7 +119,7 @@ public class PointAnimator {
     private Animator initHideTailAnimator() {
         ValueAnimator arcTailHideAnimator = ValueAnimator.ofFloat(0, 1);
         arcTailHideAnimator.setDuration(mArcSpeed);
-        arcTailHideAnimator.setInterpolator(new AccelerateInterpolator());
+        arcTailHideAnimator.setInterpolator(new LinearInterpolator());
         arcTailHideAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -130,10 +130,11 @@ public class PointAnimator {
         return arcTailHideAnimator;
     }
 
+
     private Animator initSpotLineAnimator() {
         ValueAnimator spotLineAnimator = ValueAnimator.ofFloat(0, 1);
         spotLineAnimator.setDuration(mLineSpeed);
-        spotLineAnimator.setInterpolator(new AccelerateInterpolator());
+        spotLineAnimator.setInterpolator(new LinearInterpolator());
         spotLineAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -147,7 +148,7 @@ public class PointAnimator {
     private Animator initSpotArcAnimator() {
         ValueAnimator spotArcAnimator = ValueAnimator.ofFloat(0, 1);
         spotArcAnimator.setDuration(mArcSpeed);
-        spotArcAnimator.setInterpolator(new AccelerateInterpolator());
+        spotArcAnimator.setInterpolator(new LinearInterpolator());
         spotArcAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -156,6 +157,23 @@ public class PointAnimator {
             }
         });
         return spotArcAnimator;
+    }
+
+    private Animator initSpotCircleAnimator() {
+        ValueAnimator spotCircleAnimator = ValueAnimator.ofFloat(0, 1);
+        spotCircleAnimator.setDuration(mArcSpeed);
+        spotCircleAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        spotCircleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float fraction = (float) animation.getAnimatedValue();
+                mPointContainer.showSpotCircle(fraction);
+            }
+        });
+        if (mDelay != 0) {
+            spotCircleAnimator.setStartDelay(mDelay);
+        }
+        return spotCircleAnimator;
     }
 
     public AnimatorSet getShowAnimatorSet() {
@@ -168,9 +186,5 @@ public class PointAnimator {
 
     public AnimatorSet getSpotAnimatorSet() {
         return mSpotAnimatorSet;
-    }
-
-    public void setDelay(long delay) {
-        mDelay = delay;
     }
 }

@@ -97,6 +97,7 @@ public class LogoLoaderAnimation extends View{
             }
         });
         invalidAnimator.start();
+        mGreenContainer.debug = true;
         final AnimatorSet set = new AnimatorSet();
         final AnimatorSet showSet = new AnimatorSet();
         final AnimatorSet hideSet = new AnimatorSet();

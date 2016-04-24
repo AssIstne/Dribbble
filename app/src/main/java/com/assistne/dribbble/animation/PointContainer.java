@@ -2,12 +2,12 @@ package com.assistne.dribbble.animation;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.util.Log;
 
 /**
  * Created by assistne on 16/4/21.
  */
 public class PointContainer {
+    public boolean debug;
     public boolean isSpotDrawing;
     public boolean isDrawingLine;
     public boolean isShowing;
@@ -54,6 +54,8 @@ public class PointContainer {
     //  圆弧所属的矩形
     public RectF circleRectF;
 
+    public PointF arcEnd;
+
     public boolean hasTailArc;
     public final float tailSweepRange = 90;
     public RectF tailCircleRectF;
@@ -97,6 +99,7 @@ public class PointContainer {
         circleRectF = new RectF(circleCenterX - circleRadius, circleCenterY - circleRadius,
                 circleCenterX + circleRadius, circleCenterY + circleRadius);
         tailCircleRectF = new RectF();
+        arcEnd = new PointF();
 
         mHasInitTailCircle = false;
         isDrawingLine = true;
@@ -125,6 +128,7 @@ public class PointContainer {
         float deltaDegree = 360f - startDegree - sweepDegree;
         tail.set(circle(deltaDegree, circleCenter.x, circleCenter.y, circleRadius));
         isDrawingLine = false;
+        arcEnd.set(tail);
     }
 
     public void showTailArc(float fraction) {
@@ -233,6 +237,23 @@ public class PointContainer {
             deltaDegree = degreeRange - 180 - degreeRange * fraction;
         }
         head.set(circle(deltaDegree, mirrorCenterX, mirrorCenterY, circleRadius));
+    }
+
+    public void showSpotCircle(float fraction) {
+        float deltaDegree = fraction * 180;
+        float cX = (arcEnd.x + lineStart.x)/2;
+        float cY = (arcEnd.y + lineStart.y)/2;
+        float deltaX = Math.abs(arcEnd.x - lineStart.x);
+        float deltaY = Math.abs(arcEnd.y - lineStart.y);
+        float radius = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 2;
+        float degree = (float) Math.toDegrees(Math.atan(deltaX / deltaY));
+        if (moveDirect > 0) {
+            head.set(circle(270 - deltaDegree - degree, cX, cY, radius));
+        } else {
+            head.set(circle(90 - degree - deltaDegree, cX, cY, radius));
+        }
+        isSpotDrawing = true;
+        isDrawingTail = false;
     }
 
     public void setTailDirect(int direct) {
