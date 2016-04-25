@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.assistne.dribbble.R;
@@ -20,12 +21,12 @@ import com.assistne.dribbble.R;
 public class LogoLoaderAnimation extends View{
     private static final String TAG = "#LogoLoaderAnimation";
 
+    private boolean mIsInitialized;
     private Paint mCirclePaint;
     private Paint mMainPaint;
     private AnimatorSet mAnimatorSet;
+    private ValueAnimator mInvalidAnimator;
 
-    private final long mLineSpeed = 400;
-    private final long mArcSpeed;// = 1400;
     //  直线距竖直方向的夹角值
     public static final float SIN_ALPHA = (float) Math.cos(Math.toRadians(PointContainer.LINE_DEGREE));
     public static final float COS_ALPHA = (float) Math.sin(Math.toRadians(PointContainer.LINE_DEGREE));
@@ -66,7 +67,6 @@ public class LogoLoaderAnimation extends View{
 
         mGreenContainer = new PointContainer(mGreenLineStartX, mGreenLineStartY, TO_RIGHT,
                 mDownCircleCenterX, mDownCircleCenterY);
-        mArcSpeed = (long) (mLineSpeed * mGreenContainer.arcLength() / mGreenContainer.lineLength);
         PointF pinkStart1 = movePoint(mGreenLineStartX, mGreenLineStartY, TO_RIGHT);
         mPinkContainer1 = new PointContainer(pinkStart1.x, pinkStart1.y, TO_RIGHT,
                 mDownCircleCenterX, mDownCircleCenterY);
@@ -87,18 +87,17 @@ public class LogoLoaderAnimation extends View{
         mBlueContainer2.setTailDirect(4);
 
         mAnimatorSet = new AnimatorSet();
-        ValueAnimator invalidAnimator = ValueAnimator.ofFloat(0, 1);
-        invalidAnimator.setDuration(1000);
-        invalidAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        invalidAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        mInvalidAnimator = ValueAnimator.ofFloat(0, 1);
+        mInvalidAnimator.setDuration(1000);
+        mInvalidAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        mInvalidAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 invalidate();
             }
         });
-        invalidAnimator.start();
+
         mGreenContainer.debug = true;
-        final AnimatorSet set = new AnimatorSet();
         final AnimatorSet showSet = new AnimatorSet();
         final AnimatorSet hideSet = new AnimatorSet();
         final AnimatorSet SpotSet = new AnimatorSet();
@@ -120,16 +119,16 @@ public class LogoLoaderAnimation extends View{
         SpotSet.playTogether(greenAni.getSpotAnimatorSet(), pinkAni1.getSpotAnimatorSet(),
                 pinkAni2.getSpotAnimatorSet(), purpleAni.getSpotAnimatorSet(),
                 blueAni1.getSpotAnimatorSet(), blueAni2.getSpotAnimatorSet());
-        set.playSequentially(showSet, hideSet, SpotSet);
-        set.addListener(new AnimatorListenerAdapter() {
+        mAnimatorSet.playSequentially(showSet, hideSet, SpotSet);
+        mAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                set.start();
+                mAnimatorSet.start();
             }
 
         });
-        set.start();
+//        mIsInitialized = true;
     }
 
     private PointF movePoint(float x, float y, float direct) {
@@ -191,15 +190,31 @@ public class LogoLoaderAnimation extends View{
         onDrawContainer(canvas, mPurpleContainer, getContext().getResources().getColor(R.color.purple));
         onDrawContainer(canvas, mBlueContainer1, getContext().getResources().getColor(R.color.blue));
         onDrawContainer(canvas, mBlueContainer2, getContext().getResources().getColor(R.color.blue));
+
     }
 
     @Override
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
+        Log.d(TAG, "onWindowVisibilityChanged: " + visibility + "  " + VISIBLE + " " +INVISIBLE +  "  " + GONE);
         if (visibility == VISIBLE) {
-            mAnimatorSet.start();
-        } else {
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mInvalidAnimator.start();
+                    mAnimatorSet.start();
+                }
+            }, 700);
+        } else if (visibility == GONE) {
+            Log.d(TAG, "else : ");
+            mInvalidAnimator.cancel();
             mAnimatorSet.cancel();
+            mGreenContainer.reset();
+            mPinkContainer1.reset();
+            mPinkContainer2.reset();
+            mPurpleContainer.reset();
+            mBlueContainer1.reset();
+            mBlueContainer2.reset();
         }
     }
 }

@@ -106,6 +106,10 @@ public class PointContainer {
         isShowing = true;
         isSpotDrawing = false;
         isDrawingTail = false;
+
+        currentLine.set(lineStart);
+        head.set(lineStart);
+        tail.set(lineStart);
     }
 
     /**
@@ -292,5 +296,19 @@ public class PointContainer {
 
     public float arcLength() {
         return (float) (2 * Math.PI * circleRadius * (degreeRange / 360));
+    }
+
+    public void reset() {
+        mHasInitTailCircle = false;
+        isDrawingLine = true;
+        isShowing = true;
+        isSpotDrawing = false;
+        isDrawingTail = false;
+
+        sweepDegree = 0;
+        head.set(lineStart);
+        tail.set(lineStart);
+        currentLine.set(lineStart);
+        tailSweepDegree = 0;
     }
 }
