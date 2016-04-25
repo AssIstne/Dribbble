@@ -9,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import com.assistne.dribbble.R;
@@ -18,10 +17,9 @@ import com.assistne.dribbble.R;
  * https://dribbble.com/shots/2657317-Logo-loader-animation
  * Created by assistne on 16/4/21.
  */
+@SuppressWarnings("deprecation")
 public class LogoLoaderAnimation extends View{
-    private static final String TAG = "#LogoLoaderAnimation";
 
-    private boolean mIsInitialized;
     private Paint mCirclePaint;
     private Paint mMainPaint;
     private AnimatorSet mAnimatorSet;
@@ -38,10 +36,10 @@ public class LogoLoaderAnimation extends View{
     private PointContainer mBlueContainer1;
     private PointContainer mBlueContainer2;
 
-    private final float mSymmetryAxis = 300f;
+    private final float mSymmetryAxis = 378f;
     //  直线起始位置
     private final float mGreenLineStartX = mSymmetryAxis - 20;
-    private final float mGreenLineStartY = 300f;
+    private final float mGreenLineStartY = 330.25f;
     //  直线起始位置
     private final float mPurpleLineStartX = mSymmetryAxis + 20;
     private final float mPurpleLineStartY = mGreenLineStartY + 108;//(float) (mGreenLineStartY + (2 * PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN) / Math.sin(Math.toRadians(PointContainer.LINE_DEGREE)));
@@ -50,6 +48,8 @@ public class LogoLoaderAnimation extends View{
     private final float mDownCircleCenterY = mGreenLineStartY + 140;//mLineLen / COS_ALPHA + mGreenLineStartY;
     private final float mUpCircleCenterX = mSymmetryAxis;
     private final float mUpCircleCenterY = mPurpleLineStartY - 140;//(float) (mPurpleLineStartY - mLineLen / COS_ALPHA);
+
+    private AnimatorListenerAdapter mRestartListener;
 
     public LogoLoaderAnimation(Context context) {
         this(context, null);
@@ -97,15 +97,14 @@ public class LogoLoaderAnimation extends View{
             }
         });
 
-        mGreenContainer.debug = true;
         final AnimatorSet showSet = new AnimatorSet();
         final AnimatorSet hideSet = new AnimatorSet();
         final AnimatorSet SpotSet = new AnimatorSet();
         PointAnimator greenAni = new PointAnimator(mGreenContainer, 200);
         PointAnimator pinkAni1 = new PointAnimator(mPinkContainer1, 100);
         PointAnimator pinkAni2 = new PointAnimator(mPinkContainer2, 0);
-        PointAnimator purpleAni = new PointAnimator(mPurpleContainer, 0);
-        PointAnimator blueAni1 = new PointAnimator(mBlueContainer1, 0);
+        PointAnimator purpleAni = new PointAnimator(mPurpleContainer, 200);
+        PointAnimator blueAni1 = new PointAnimator(mBlueContainer1, 100);
         PointAnimator blueAni2 = new PointAnimator(mBlueContainer2, 0);
 
         showSet.playTogether(greenAni.getShowAnimatorSet(), pinkAni1.getShowAnimatorSet(),
@@ -120,17 +119,28 @@ public class LogoLoaderAnimation extends View{
                 pinkAni2.getSpotAnimatorSet(), purpleAni.getSpotAnimatorSet(),
                 blueAni1.getSpotAnimatorSet(), blueAni2.getSpotAnimatorSet());
         mAnimatorSet.playSequentially(showSet, hideSet, SpotSet);
-        mAnimatorSet.addListener(new AnimatorListenerAdapter() {
+        mRestartListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                mAnimatorSet.start();
+                if (getVisibility() == VISIBLE) {
+                    //  循环动画
+                    mAnimatorSet.start();
+                }
             }
 
-        });
-//        mIsInitialized = true;
+        };
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        //  固定图像大小
+        setMeasuredDimension(765, 765);
+    }
+
+    /**
+     * 根据前一直线的起始点计算相邻平行直线的起始位置*/
     private PointF movePoint(float x, float y, float direct) {
         float x1 = x + direct * (PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN) * COS_ALPHA;
         float y1 = y - direct * (PointContainer.PAINT_WIDTH + PointContainer.LINE_MARGIN) * SIN_ALPHA;
@@ -157,6 +167,8 @@ public class LogoLoaderAnimation extends View{
                 canvas.drawLine(container.lineStart.x, container.lineStart.y,
                         container.currentLine.x, container.currentLine.y, mMainPaint);
                 if (!container.isDrawingLine) {//  进入画弧阶段
+                    //  直线与弧的交接点补色
+                    canvas.drawCircle(container.lineEnd.x, container.lineEnd.y, PointContainer.PAINT_WIDTH/2, mCirclePaint);
                     //  画弧
                     canvas.drawArc(container.circleRectF, container.startDegree, container.sweepDegree, false, mMainPaint);
                 }
@@ -171,11 +183,15 @@ public class LogoLoaderAnimation extends View{
                 }
             }
             if (container.isDrawingTail && container.hasTailArc) {
+                //  弧与尾端弧度的交接点补色
+                canvas.drawCircle(container.arcEnd.x, container.arcEnd.y, PointContainer.PAINT_WIDTH/2, mCirclePaint);
+                //  尾端弧度
                 canvas.drawArc(container.tailCircleRectF, container.tailStartDegree, container.tailSweepDegree, false, mMainPaint);
             }
             //  画末端的圆点
             canvas.drawCircle(container.tail.x, container.tail.y, PointContainer.PAINT_WIDTH/2, mCirclePaint);
         } else {
+            //  动点
             canvas.drawCircle(container.head.x, container.head.y, PointContainer.PAINT_WIDTH/2, mCirclePaint);
         }
     }
@@ -196,19 +212,20 @@ public class LogoLoaderAnimation extends View{
     @Override
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
-        Log.d(TAG, "onWindowVisibilityChanged: " + visibility + "  " + VISIBLE + " " +INVISIBLE +  "  " + GONE);
         if (visibility == VISIBLE) {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    mAnimatorSet.addListener(mRestartListener);
                     mInvalidAnimator.start();
                     mAnimatorSet.start();
                 }
             }, 700);
+
         } else if (visibility == GONE) {
-            Log.d(TAG, "else : ");
-            mInvalidAnimator.cancel();
-            mAnimatorSet.cancel();
+            mAnimatorSet.removeAllListeners();
+            mInvalidAnimator.end();
+            mAnimatorSet.end();
             mGreenContainer.reset();
             mPinkContainer1.reset();
             mPinkContainer2.reset();
@@ -217,4 +234,5 @@ public class LogoLoaderAnimation extends View{
             mBlueContainer2.reset();
         }
     }
+
 }

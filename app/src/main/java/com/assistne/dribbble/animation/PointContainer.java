@@ -4,10 +4,10 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 
 /**
+ * 坐标类, 动态计算坐标
  * Created by assistne on 16/4/21.
  */
 public class PointContainer {
-    public boolean debug;
     public boolean isSpotDrawing;
     public boolean isDrawingLine;
     public boolean isShowing;
@@ -53,18 +53,26 @@ public class PointContainer {
     public float sweepDegree;
     //  圆弧所属的矩形
     public RectF circleRectF;
-
+    //  圆弧的末点坐标
     public PointF arcEnd;
-
+    //  是否有尾端弧
     public boolean hasTailArc;
+    //  尾端弧角度范围固定
     public final float tailSweepRange = 90;
+    //  尾端弧圆矩形
     public RectF tailCircleRectF;
+    //  尾端弧起始角度, 与运动方向相关
     public float tailStartDegree;
+    //  扫过的角度, 动态变化
     public float tailSweepDegree;
+    //  标志, 仅赋值一次末端弧的圆心
     private boolean mHasInitTailCircle;
+    //  末端弧圆心
     private float mTailCircleY;
     private float mTailCircleX;
+    //  末端弧半径
     private float mTailRadius;
+    //  末端弧显示方向
     private int tailDirect;// 1:270-360;2:180-270;3:90-180;4:0-90
 
     public PointContainer(float lineStartX, float lineStartY, float moveDirect,
@@ -113,7 +121,8 @@ public class PointContainer {
     }
 
     /**
-     * @param fraction 正值表示向右移动, 负值向左*/
+     * 直线显示阶段
+     * */
     public void showLine(float fraction) {
         float deltaX = moveDirect * fraction * lineXRange;
         currentLine.x = lineStart.x + deltaX;
@@ -126,6 +135,8 @@ public class PointContainer {
         isDrawingTail = false;
     }
 
+    /**
+     * 圆弧显示阶段*/
     public void showArc(float fraction) {
         sweepDegree = degreeRange * fraction;
         //  转换角度
@@ -135,6 +146,8 @@ public class PointContainer {
         arcEnd.set(tail);
     }
 
+    /**
+     * 末端弧显示阶段*/
     public void showTailArc(float fraction) {
         if (!hasTailArc || tailDirect < 1 || tailDirect > 4) {
             return;
@@ -180,6 +193,8 @@ public class PointContainer {
         isDrawingTail = true;
     }
 
+    /**
+     * 直线隐藏阶段*/
     public void hideLine(float fraction) {
         float deltaX = fraction * lineXRange * moveDirect;
         currentLine.x = lineStart.x + deltaX;
@@ -189,6 +204,8 @@ public class PointContainer {
         isShowing = false;
     }
 
+    /**
+     * 圆弧隐藏阶段*/
     public void hideArc(float fraction) {
         sweepDegree = degreeRange * fraction;
         //  转换角度
@@ -197,6 +214,8 @@ public class PointContainer {
         isDrawingLine = false;
     }
 
+    /**
+     * 末端弧隐藏阶段*/
     public void hideTailArc(float fraction) {
         if (!hasTailArc || tailDirect < 1 || tailDirect > 4) {
             return;
@@ -222,6 +241,9 @@ public class PointContainer {
         isSpotDrawing = false;
     }
 
+    /**
+    * 动点直线阶段*/
+    @Deprecated
     public void showSpotLine(float fraction) {
         float deltaX = -1 * moveDirect * fraction * lineXRange;
         head.x = tail.x + deltaX;
@@ -230,6 +252,9 @@ public class PointContainer {
         isDrawingTail = false;
     }
 
+    /**
+     * 动点圆弧阶段*/
+    @Deprecated
     public void showSpotArc(float fraction) {
         final float mirrorCenterX = lineStart.x - circleRadius * moveDirect;
         final float mirrorCenterY = lineStart.y;
@@ -243,6 +268,8 @@ public class PointContainer {
         head.set(circle(deltaDegree, mirrorCenterX, mirrorCenterY, circleRadius));
     }
 
+    /**
+     * 动点画圆阶段*/
     public void showSpotCircle(float fraction) {
         float deltaDegree = fraction * 180;
         float cX = (arcEnd.x + lineStart.x)/2;
@@ -279,6 +306,13 @@ public class PointContainer {
         return y1 + LINE_SLOPE * (x - x1);
     }
 
+    /**
+     * 根据直线起点和圆弧圆心计算终点坐标, 终点坐标为切点
+     * @param x1 起点X
+     * @param y1 起点Y
+     * @param x2 圆心X
+     * @param y2 圆心y
+     * */
     private PointF lineEnd(float x1, float y1, float x2, float y2) {
         float x = (LINE_SLOPE * LINE_SLOPE * x1 - LINE_SLOPE * y1 + x2 + LINE_SLOPE * y2) / (LINE_SLOPE * LINE_SLOPE + 1);
         float y = line(x1, y1, x);
@@ -294,6 +328,8 @@ public class PointContainer {
         return new PointF(x, y);
     }
 
+    /**
+     * 计算圆弧长度*/
     public float arcLength() {
         return (float) (2 * Math.PI * circleRadius * (degreeRange / 360));
     }
