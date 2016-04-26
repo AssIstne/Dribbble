@@ -1,13 +1,25 @@
 package com.assistne.dribbble;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
-public class MainActivity extends AppCompatActivity {
+import com.assistne.dribbble.framestday004.FStD4Activity;
+
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
+
+    public void goFStD4Activity(View view) {
+        startActivity(new Intent(this, FStD4Activity.class));
+    }
+
+    public void goAnimationActivity(View view) {
+        startActivity(new Intent(this, AnimationActivity.class));
     }
 }

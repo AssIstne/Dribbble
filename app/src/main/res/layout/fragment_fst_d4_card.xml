@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="440dp"
+        android:layout_marginTop="45dp"
+        android:layout_gravity="center_horizontal"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:paddingBottom="37dp"
+        android:background="@drawable/fst_day4_img_bg"
+        >
+
+        <ImageView
+            android:id="@+id/fst_d4_card_avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/fst_day4_avatar2"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:adjustViewBounds="true"
+            />
+        <TextView
+            android:id="@+id/fst_d4_card_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/fst_d4_card_avatar"
+            android:layout_marginBottom="8dp"
+            android:textSize="8sp"
+            android:textColor="#828485"
+            android:text="@string/ny_comment"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#58828485"
+            android:layout_below="@id/fst_d4_card_comment"
+            />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/fst_d4_card_comment"
+            android:src="@drawable/fst_day4_bb_star"
+            />
+
+    </RelativeLayout>
+    <ImageView
+        android:id="@+id/fst_d4_card_img"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:src="@drawable/fst_day4_bb"
+        android:layout_gravity="center_horizontal"
+        android:adjustViewBounds="true"
+        />
+</FrameLayout>
