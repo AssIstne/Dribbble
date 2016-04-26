@@ -1,4 +1,4 @@
-package com.assistne.dribbble.animation;
+package com.assistne.dribbble.logoloader;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
