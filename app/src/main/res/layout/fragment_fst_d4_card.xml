@@ -5,6 +5,7 @@
     android:layout_height="match_parent">
 
     <RelativeLayout
+        android:id="@+id/fst_d4_container"
         android:layout_width="300dp"
         android:layout_height="440dp"
         android:layout_marginTop="45dp"
@@ -17,7 +18,7 @@
 
         <ImageView
             android:id="@+id/fst_d4_card_avatar"
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="30dp"
             android:layout_alignParentBottom="true"
             android:src="@drawable/fst_day4_avatar2"
@@ -25,30 +26,31 @@
             android:layout_marginTop="10dp"
             android:adjustViewBounds="true"
             />
-        <TextView
-            android:id="@+id/fst_d4_card_comment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/fst_d4_card_avatar"
-            android:layout_marginBottom="8dp"
-            android:textSize="8sp"
-            android:textColor="#828485"
-            android:text="@string/ny_comment"
-            />
-
         <View
             android:layout_width="match_parent"
             android:layout_height="1px"
             android:background="#58828485"
-            android:layout_below="@id/fst_d4_card_comment"
+            android:layout_above="@id/fst_d4_card_avatar"
             />
         <ImageView
+            android:id="@+id/fst_d4_star"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/fst_d4_card_comment"
+            android:layout_height="14dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="185dp"
+            android:layout_marginBottom="5dp"
             android:src="@drawable/fst_day4_bb_star"
             />
 
+        <TextView
+            android:id="@+id/fst_d4_card_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fst_d4_star"
+            android:textSize="9sp"
+            android:textColor="#828485"
+            android:text="@string/ny_comment"
+            />
     </RelativeLayout>
     <ImageView
         android:id="@+id/fst_d4_card_img"

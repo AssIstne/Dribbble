@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name">Dribbble</string>
     <!-- Framer Studio Day 004 -->
-    <string name="ny_comment">New York is an important center for international diplomacy and has been described as the cultural and financial capital of the world</string>
+    <string name="wt_comment">
+        Taking good pictures is fun, makes you happy and fills you with pride
+    </string>
+    <string name="ny_comment">
+        New York is an important center for international diplomacy and has been described as the cultural and financial capital of the world
+    </string>
+    <string name="bb_comment">
+        The Brooklyn Bridge is a hybrid cable-stayed suspension bridge in New York City
+    </string>
 </resources>
