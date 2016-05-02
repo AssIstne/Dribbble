@@ -14,6 +14,10 @@
         android:paddingEnd="40dp"
         android:paddingBottom="37dp"
         android:background="@drawable/fst_day4_img_bg"
+        android:transformPivotX="150dp"
+        android:transformPivotY="100dp"
+        android:scaleX="0.5"
+        android:scaleY="0.3"
         >
 
         <ImageView
@@ -25,6 +29,7 @@
             android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp"
             android:adjustViewBounds="true"
+            android:alpha="0"
             />
         <View
             android:layout_width="match_parent"
@@ -40,6 +45,7 @@
             android:layout_marginTop="185dp"
             android:layout_marginBottom="5dp"
             android:src="@drawable/fst_day4_bb_star"
+            android:translationY="-15dp"
             />
 
         <TextView
@@ -50,6 +56,7 @@
             android:textSize="9sp"
             android:textColor="#828485"
             android:text="@string/ny_comment"
+            android:alpha="0"
             />
     </RelativeLayout>
     <ImageView
@@ -60,5 +67,6 @@
         android:src="@drawable/fst_day4_bb"
         android:layout_gravity="center_horizontal"
         android:adjustViewBounds="true"
+        android:translationY="60dp"
         />
 </FrameLayout>

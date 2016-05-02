@@ -1,5 +1,8 @@
 package com.assistne.dribbble.framestday004;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
@@ -7,9 +10,11 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -31,6 +36,9 @@ public class CardFragment extends Fragment{
     private ImageView mStar;
     private TextView mComment;
     private ImageView mAvatar;
+
+    private AnimatorSet mShowSet;
+    private AnimatorSet mHideSet;
 
     public static CardFragment newInstance(@DrawableRes int card, @DrawableRes int star,
                                            @StringRes int comment, @DrawableRes int avatar) {
@@ -63,16 +71,62 @@ public class CardFragment extends Fragment{
         return root;
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mShowSet = new AnimatorSet();
+        ObjectAnimator containAniX = ObjectAnimator.ofFloat(mContainer, "scaleX", 1f);
+        ObjectAnimator containAniY = ObjectAnimator.ofFloat(mContainer, "scaleY", 1f);
+        ObjectAnimator imgAni = ObjectAnimator.ofFloat(mCard, "translationY", 0).setDuration(500);
+        AnimatorSet containSet = new AnimatorSet();
+        containSet.playTogether(containAniX, containAniY, imgAni);
+        ObjectAnimator avatarAni = ObjectAnimator.ofFloat(mAvatar, "alpha", 1f);
+        ObjectAnimator commentAni = ObjectAnimator.ofFloat(mComment, "alpha", 1f);
+        AnimatorSet imgSet = new AnimatorSet();
+        imgSet.playTogether(avatarAni, commentAni);
+        ObjectAnimator starAni = ObjectAnimator.ofFloat(mStar, "translationY", 0);
+        mShowSet.playSequentially(containSet, imgSet, starAni);
+    }
+
     public void show() {
         Log.d(TAG, "show: " + this + "  " +mContainer);
-        if (mContainer != null) {
-            mContainer.setVisibility(View.VISIBLE);
-        }
+        mContainer.setVisibility(View.VISIBLE);
+        mShowSet = new AnimatorSet();
+        ObjectAnimator containAniX = ObjectAnimator.ofFloat(mContainer, "scaleX", 1f);
+        ObjectAnimator containAniY = ObjectAnimator.ofFloat(mContainer, "scaleY", 1f);
+        ObjectAnimator imgAni = ObjectAnimator.ofFloat(mCard, "translationY", 0).setDuration(500);
+        AnimatorSet containSet = new AnimatorSet();
+        containSet.playTogether(containAniX, containAniY, imgAni);
+        ObjectAnimator avatarAni = ObjectAnimator.ofFloat(mAvatar, "alpha", 1f);
+        ObjectAnimator commentAni = ObjectAnimator.ofFloat(mComment, "alpha", 1f);
+        AnimatorSet imgSet = new AnimatorSet();
+        ObjectAnimator starAni = ObjectAnimator.ofFloat(mStar, "translationY", 0);
+        ObjectAnimator starAniAlpha = ObjectAnimator.ofFloat(mStar, "alpha", 1f);
+        imgSet.playTogether(avatarAni, commentAni, starAni, starAniAlpha);
+        mShowSet.playSequentially(containSet, imgSet);
+        mShowSet.start();
     }
 
     public void hide() {
-        if (mContainer != null) {
-            mContainer.setVisibility(View.GONE);
-        }
+        Log.d(TAG, "hide: " + this + "  " +mContainer);
+        mHideSet = new AnimatorSet();
+        ObjectAnimator containAniX = ObjectAnimator.ofFloat(mContainer, "scaleX", 0.5f);
+        ObjectAnimator containAniY = ObjectAnimator.ofFloat(mContainer, "scaleY", 0.3f);
+        ObjectAnimator imgAni = ObjectAnimator.ofFloat(mCard, "translationY", dp2Px(60)).setDuration(500);
+        AnimatorSet containSet = new AnimatorSet();
+        containSet.playTogether(containAniX, containAniY, imgAni);
+
+        ObjectAnimator avatarAni = ObjectAnimator.ofFloat(mAvatar, "alpha", 0f);
+        ObjectAnimator commentAni = ObjectAnimator.ofFloat(mComment, "alpha", 0f);
+        ObjectAnimator starAniAlpha = ObjectAnimator.ofFloat(mStar, "alpha", 0f).setDuration(600);
+        AnimatorSet imgSet = new AnimatorSet();
+        imgSet.playTogether(avatarAni, commentAni, starAniAlpha);
+        mHideSet.playSequentially(containSet, imgSet);
+        mHideSet.start();
+        mStar.setTranslationY(-1 * dp2Px(15));
+    }
+
+    private float dp2Px(int dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
 }

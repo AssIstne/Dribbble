@@ -1,21 +1,15 @@
 package com.assistne.dribbble.framestday004;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
+import android.util.SparseArray;
 
 import com.assistne.dribbble.R;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Created by assistne on 16/4/26.
@@ -56,8 +50,10 @@ public class FStD4Activity extends AppCompatActivity {
     }
 
     private class MyPageAdapter extends FragmentPagerAdapter {
+        SparseArray<Fragment> mFragments;
         public MyPageAdapter(FragmentManager fm) {
             super(fm);
+            mFragments = new SparseArray<>();
         }
 
         @Override
@@ -67,31 +63,25 @@ public class FStD4Activity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            Log.d(TAG, "getItem: " + position);
-            switch (position) {
-                case 0:
-                    return CardFragment.newInstance(R.drawable.fst_day4_wt, R.drawable.fst_day4_wt_star,
-                            R.string.wt_comment, R.drawable.fst_day4_avatar3);
-                case 1:
-                    return CardFragment.newInstance(R.drawable.fst_day4_ny, R.drawable.fst_day4_ny_star,
-                            R.string.ny_comment, R.drawable.fst_day4_avatar2);
-                case 2:
-                    return CardFragment.newInstance(R.drawable.fst_day4_bb, R.drawable.fst_day4_bb_star,
-                            R.string.bb_comment, R.drawable.fst_day4_avatar1);
+            if (mFragments.get(position) == null) {
+                Fragment fragment;
+                switch (position) {
+                    case 1:
+                        fragment = CardFragment.newInstance(R.drawable.fst_day4_ny, R.drawable.fst_day4_ny_star,
+                                R.string.ny_comment, R.drawable.fst_day4_avatar2);
+                        break;
+                    case 2:
+                        fragment = CardFragment.newInstance(R.drawable.fst_day4_bb, R.drawable.fst_day4_bb_star,
+                                R.string.bb_comment, R.drawable.fst_day4_avatar1);
+                        break;
+                    default:
+                        fragment = CardFragment.newInstance(R.drawable.fst_day4_wt, R.drawable.fst_day4_wt_star,
+                                R.string.wt_comment, R.drawable.fst_day4_avatar3);
+                        break;
+                }
+                mFragments.put(position, fragment);
             }
-            return null;
-        }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            Log.d(TAG, "instantiateItem: " + position);
-            return super.instantiateItem(container, position);
-        }
-
-        @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            Log.d(TAG, "destroyItem: " + position + "  " + object);
-            super.destroyItem(container, position, object);
+            return mFragments.get(position);
         }
     }
 }
