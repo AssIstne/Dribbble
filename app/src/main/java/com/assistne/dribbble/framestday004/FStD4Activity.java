@@ -22,8 +22,9 @@ public class FStD4Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fst_d4);
+        final MyPageAdapter adapter = new MyPageAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.fst_d4_viewpager);
-        mViewPager.setAdapter(new MyPageAdapter(getSupportFragmentManager()));
+        mViewPager.setAdapter(adapter);
         mViewPager.setOffscreenPageLimit(2);
         mViewPager.setPageMargin(-250);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -32,7 +33,6 @@ public class FStD4Activity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                Log.d(TAG, "onPageSelected: " + position);
                 FragmentPagerAdapter adapter = (FragmentPagerAdapter) mViewPager.getAdapter();
                 for (int i = 0; i < adapter.getCount(); i ++) {
                     CardFragment fragment = (CardFragment) adapter.getItem(i);
@@ -68,15 +68,15 @@ public class FStD4Activity extends AppCompatActivity {
                 switch (position) {
                     case 1:
                         fragment = CardFragment.newInstance(R.drawable.fst_day4_ny, R.drawable.fst_day4_ny_star,
-                                R.string.ny_comment, R.drawable.fst_day4_avatar2);
+                                R.string.ny_comment, R.drawable.fst_day4_avatar2, false);
                         break;
                     case 2:
                         fragment = CardFragment.newInstance(R.drawable.fst_day4_bb, R.drawable.fst_day4_bb_star,
-                                R.string.bb_comment, R.drawable.fst_day4_avatar1);
+                                R.string.bb_comment, R.drawable.fst_day4_avatar1, false);
                         break;
                     default:
                         fragment = CardFragment.newInstance(R.drawable.fst_day4_wt, R.drawable.fst_day4_wt_star,
-                                R.string.wt_comment, R.drawable.fst_day4_avatar3);
+                                R.string.wt_comment, R.drawable.fst_day4_avatar3, true);
                         break;
                 }
                 mFragments.put(position, fragment);
