@@ -3,6 +3,7 @@ package com.assistne.dribbble.framestday004;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.annotation.IdRes;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -49,22 +50,18 @@ public class DragImageView extends FrameLayout {
 
             @Override
             public void onViewReleased(View releasedChild, float xvel, float yvel) {
-                super.onViewReleased(releasedChild, xvel, yvel);
-                mHelper.smoothSlideViewTo(releasedChild, 0, 0);
+                Log.d(TAG, "onViewReleased: ");
+
+                if (mHelper.settleCapturedViewAt(0, 0)) {
+                    ViewCompat.postInvalidateOnAnimation(DragImageView.this);
+                }
             }
 
             @Override
             public int clampViewPositionVertical(View child, int top, int dy) {
-                Log.d(TAG, "clampViewPositionVertical: " + dy);
                 final int topBound = getPaddingTop();
                 final int bottomBound = getHeight() - child.getHeight();
                 return Math.min(Math.max(top, topBound), bottomBound);
-            }
-
-            @Override
-            public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
-                super.onViewPositionChanged(changedView, left, top, dx, dy);
-                Log.d(TAG, "onViewPositionChanged: " + top);
             }
         };
     }
@@ -78,5 +75,16 @@ public class DragImageView extends FrameLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         return mHelper.shouldInterceptTouchEvent(ev);
+    }
+
+    @Override
+    public void computeScroll() {
+        if (mHelper.continueSettling(true)) {
+            ViewCompat.postInvalidateOnAnimation(DragImageView.this);
+        }
+    }
+
+    public interface DragCallback {
+
     }
 }
