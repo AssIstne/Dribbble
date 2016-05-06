@@ -34,15 +34,20 @@ public class CardFragment extends Fragment{
     public static final String KEY_IS_SHOW = "IS_SHOW";
 
     private View mContainer;
+    private DragImageView mSpanCard;
     private ImageView mCard;
     private ImageView mStar;
     private TextView mComment;
     private ImageView mAvatar;
+    private View mSpanDone;
 
     private AnimatorSet mShowSet;
+    private AnimatorSet mShowContainer;
     private AnimatorSet mHideSet;
+    private AnimatorSet mHideContainer;
 
     private boolean mIsShow;
+    private boolean mIsInEnvelope;
 
     public static CardFragment newInstance(@DrawableRes int card, @DrawableRes int star,
                                            @StringRes int comment, @DrawableRes int avatar, boolean isShow) {
@@ -67,6 +72,8 @@ public class CardFragment extends Fragment{
         mStar = (ImageView) root.findViewById(R.id.fst_d4_star);
         mComment = (TextView) root.findViewById(R.id.fst_d4_card_comment);
         mAvatar = (ImageView) root.findViewById(R.id.fst_d4_card_avatar);
+        mSpanCard = (DragImageView) root.findViewById(R.id.fst_d4_span_card);
+        mSpanDone = root.findViewById(R.id.fst_d4_span_done);
         Bundle bundle = getArguments();
         mCard.setImageResource(bundle.getInt(KEY_CARD));
         mStar.setImageResource(bundle.getInt(KEY_STAR));
@@ -91,6 +98,49 @@ public class CardFragment extends Fragment{
             mStar.setTranslationY(0);
             mStar.setAlpha(1f);
         }
+
+        mSpanCard.setListener(new DragImageView.DragCallback() {
+            @Override
+            public void onReleaseOtherPosition() {
+                if (!mIsInEnvelope) {
+                    mShowContainer.start();
+                    ((FStD4Activity)getActivity()).hideEnvelope();
+                }
+            }
+
+            @Override
+            public void onStartDragging() {
+                if (!mIsInEnvelope) {
+                    mHideContainer.start();
+                    ((FStD4Activity)getActivity()).showEnvelope();
+                }
+            }
+
+            @Override
+            public void onReleaseSpecifiedPosition() {
+                mIsInEnvelope = true;
+                mContainer.setVisibility(View.GONE);
+                mSpanCard.setVisibility(View.GONE);
+                ((FStD4Activity)getActivity()).hideEnvelope();
+                ((FStD4Activity)getActivity()).hideMessage();
+                mSpanDone.setVisibility(View.VISIBLE);
+                AnimatorSet set = new AnimatorSet();
+                Animator trans = ObjectAnimator.ofFloat(mSpanDone, "translationY", 0);
+                Animator alpha = ObjectAnimator.ofFloat(mSpanDone, "alpha", 1);
+                alpha.setDuration(700);
+                set.playTogether(trans, alpha);
+                set.start();
+            }
+
+            @Override
+            public void onAboveSpecifiedPositionOrNOt(boolean isEnter) {
+                if (isEnter) {
+                    ((FStD4Activity)getActivity()).showMessage();
+                } else {
+                    ((FStD4Activity)getActivity()).hideMessage();
+                }
+            }
+        });
     }
 
     private void initShowSet() {
@@ -98,9 +148,11 @@ public class CardFragment extends Fragment{
         ObjectAnimator containAniX = ObjectAnimator.ofFloat(mContainer, "scaleX", 1f);
         ObjectAnimator containAniY = ObjectAnimator.ofFloat(mContainer, "scaleY", 1f);
         ObjectAnimator containAlpha = ObjectAnimator.ofFloat(mContainer, "alpha", 1f);
+        mShowContainer = new AnimatorSet();
+        mShowContainer.playTogether(containAniX, containAniY, containAlpha);
         ObjectAnimator imgAni = ObjectAnimator.ofFloat(mCard, "translationY", 0).setDuration(500);
         AnimatorSet containSet = new AnimatorSet();
-        containSet.playTogether(containAniX, containAniY, containAlpha, imgAni);
+        containSet.playTogether(mShowContainer, imgAni);
         ObjectAnimator avatarAni = ObjectAnimator.ofFloat(mAvatar, "alpha", 1f);
         ObjectAnimator commentAni = ObjectAnimator.ofFloat(mComment, "alpha", 1f);
         AnimatorSet imgSet = new AnimatorSet();
@@ -115,9 +167,11 @@ public class CardFragment extends Fragment{
         ObjectAnimator containAniX = ObjectAnimator.ofFloat(mContainer, "scaleX", 0.5f);
         ObjectAnimator containAniY = ObjectAnimator.ofFloat(mContainer, "scaleY", 0.3f);
         ObjectAnimator containAlpha = ObjectAnimator.ofFloat(mContainer, "alpha", 0f);
+        mHideContainer = new AnimatorSet();
+        mHideContainer.playTogether(containAniX, containAniY, containAlpha);
         ObjectAnimator imgAni = ObjectAnimator.ofFloat(mCard, "translationY", dp2Px(60)).setDuration(500);
         AnimatorSet containSet = new AnimatorSet();
-        containSet.playTogether(containAniX, containAniY, containAlpha, imgAni);
+        containSet.playTogether(mHideContainer, imgAni);
 
         ObjectAnimator avatarAni = ObjectAnimator.ofFloat(mAvatar, "alpha", 0f);
         ObjectAnimator commentAni = ObjectAnimator.ofFloat(mComment, "alpha", 0f);
@@ -128,7 +182,7 @@ public class CardFragment extends Fragment{
     }
 
     public void show() {
-        if (!mIsShow) {
+        if (!mIsShow && !mIsInEnvelope) {
             mIsShow = true;
             mContainer.setVisibility(View.VISIBLE);
             mShowSet.start();
@@ -136,7 +190,7 @@ public class CardFragment extends Fragment{
     }
 
     public void hide() {
-        if (mIsShow) {
+        if (mIsShow && !mIsInEnvelope) {
             mIsShow = false;
             mHideSet.start();
             mStar.setTranslationY(-1 * dp2Px(15));

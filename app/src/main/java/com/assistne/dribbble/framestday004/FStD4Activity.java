@@ -1,5 +1,8 @@
 package com.assistne.dribbble.framestday004;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -8,6 +11,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.TypedValue;
+import android.view.animation.LinearInterpolator;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.assistne.dribbble.R;
 
@@ -17,11 +24,21 @@ import com.assistne.dribbble.R;
 public class FStD4Activity extends AppCompatActivity {
     private static final String TAG = "#FStD4Activity";
     private ViewPager mViewPager;
+    private AnimatorSet mShowEnvelope;
+    private AnimatorSet mHideEnvelope;
+    private AnimatorSet mShowMsg;
+    private AnimatorSet mHideMsg;
+    private ImageView mEnvelopeHead;
+    private ImageView mEnvelopeBody;
+    private TextView mEnvelopeMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fst_d4);
+        mEnvelopeHead = (ImageView) findViewById(R.id.fst_d4_envelope_head);
+        mEnvelopeBody = (ImageView) findViewById(R.id.fst_d4_envelope_body);
+        mEnvelopeMsg = (TextView) findViewById(R.id.fst_d4_envelope_msg);
         final MyPageAdapter adapter = new MyPageAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.fst_d4_viewpager);
         mViewPager.setAdapter(adapter);
@@ -82,6 +99,61 @@ public class FStD4Activity extends AppCompatActivity {
                 mFragments.put(position, fragment);
             }
             return mFragments.get(position);
+        }
+    }
+
+    public void showEnvelope() {
+        if (mHideEnvelope != null) {
+            mHideEnvelope.cancel();
+        }
+        if (mShowEnvelope == null) {
+            mShowEnvelope = new AnimatorSet();
+
+            Animator head = ObjectAnimator.ofFloat(mEnvelopeHead, "translationY", 0);
+            Animator body = ObjectAnimator.ofFloat(mEnvelopeBody, "translationY", 0);
+            mShowEnvelope.playTogether(head, body);
+        }
+        mShowEnvelope.start();
+    }
+
+    public void hideEnvelope() {
+        if (mShowEnvelope != null) {
+            mShowEnvelope.cancel();
+        }
+        if (mHideEnvelope == null) {
+            mHideEnvelope = new AnimatorSet();
+            float to = getResources().getDimensionPixelSize(R.dimen.fst_day4_envelope_translationY);
+            Animator head = ObjectAnimator.ofFloat(mEnvelopeHead, "translationY", to);
+            Animator body = ObjectAnimator.ofFloat(mEnvelopeBody, "translationY", to);
+            mHideEnvelope.playTogether(head, body);
+        }
+        mHideEnvelope.start();
+    }
+
+    public void showMessage() {
+        if (mShowMsg == null) {
+            mShowMsg = new AnimatorSet();
+            Animator trans = ObjectAnimator.ofFloat(mEnvelopeMsg, "translationY", 0);
+            Animator alpha = ObjectAnimator.ofFloat(mEnvelopeMsg, "alpha", 1);
+            alpha.setDuration(700);
+            mShowMsg.playTogether(trans, alpha);
+        }
+        if (!mShowMsg.isRunning() && mEnvelopeMsg.getAlpha() == 0) {
+            mShowMsg.start();
+        }
+    }
+
+    public void hideMessage() {
+        float to = getResources().getDimensionPixelSize(R.dimen.fst_day4_envelope_msg_translationY);
+        if (mHideMsg == null) {
+            mHideMsg = new AnimatorSet();
+            Animator trans = ObjectAnimator.ofFloat(mEnvelopeMsg, "translationY", to);
+            Animator alpha = ObjectAnimator.ofFloat(mEnvelopeMsg, "alpha", 0);
+            alpha.setDuration(700);
+            mHideMsg.playTogether(trans, alpha);
+        }
+        if (!mHideMsg.isRunning() && mEnvelopeMsg.getTranslationY() < to) {
+            mHideMsg.start();
         }
     }
 }

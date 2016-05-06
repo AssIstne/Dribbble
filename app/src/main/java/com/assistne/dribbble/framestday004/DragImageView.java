@@ -22,6 +22,15 @@ public class DragImageView extends FrameLayout {
     @IdRes
     private int mTargetId;
     private ViewDragHelper mHelper;
+    private DragCallback mListener;
+
+    private boolean mIsOrigin;
+    private int mOriginLeft;
+    private int mOriginTop;
+    private int mCurrentBottom;
+
+    private boolean mDragging;
+    private int mSpecifiedLine;
 
     public DragImageView(Context context) {
         this(context, null);
@@ -45,15 +54,44 @@ public class DragImageView extends FrameLayout {
         return new ViewDragHelper.Callback() {
             @Override
             public boolean tryCaptureView(View child, int pointerId) {
-                return child.getId() == mTargetId;
+                if (child.getId() == mTargetId) {
+                    mDragging = false;
+                    if (!mIsOrigin) {
+                        mIsOrigin = true;
+                        mOriginLeft = child.getLeft();
+                        mOriginTop = child.getTop();
+                        mSpecifiedLine = (int) (0.84 * getHeight());
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
+                mCurrentBottom = changedView.getBottom();
+                if (mListener != null) {
+                    if (Math.abs(dy) > 2 && !mDragging) {
+                        mDragging = true;
+                        mListener.onStartDragging();
+                    }
+                    mListener.onAboveSpecifiedPositionOrNOt(top + changedView.getHeight() > mSpecifiedLine);
+                }
             }
 
             @Override
             public void onViewReleased(View releasedChild, float xvel, float yvel) {
-                Log.d(TAG, "onViewReleased: ");
-
-                if (mHelper.settleCapturedViewAt(0, 0)) {
-                    ViewCompat.postInvalidateOnAnimation(DragImageView.this);
+                if (mCurrentBottom > mSpecifiedLine) {
+                    if (mListener != null) {
+                        mListener.onReleaseSpecifiedPosition();
+                    }
+                } else {
+                    if (mHelper.settleCapturedViewAt(mOriginLeft, mOriginTop)) {
+                        ViewCompat.postInvalidateOnAnimation(DragImageView.this);
+                    }
+                    if (mListener != null) {
+                        mListener.onReleaseOtherPosition();
+                    }
                 }
             }
 
@@ -84,7 +122,14 @@ public class DragImageView extends FrameLayout {
         }
     }
 
-    public interface DragCallback {
+    public void setListener(DragCallback listener) {
+        mListener = listener;
+    }
 
+    public interface DragCallback {
+        void onReleaseOtherPosition();
+        void onStartDragging();
+        void onReleaseSpecifiedPosition();
+        void onAboveSpecifiedPositionOrNOt(boolean isEnter);
     }
 }

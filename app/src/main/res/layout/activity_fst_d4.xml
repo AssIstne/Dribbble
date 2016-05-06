@@ -33,12 +33,6 @@
             android:src="@drawable/fst_day4_search"
             />
     </RelativeLayout>
-    <android.support.v4.view.ViewPager
-        android:id="@+id/fst_d4_viewpager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/bar"
-        />
 
     <ImageView
         android:layout_width="19dp"
@@ -60,13 +54,47 @@
         />
 
     <ImageView
-        android:layout_width="wrap_content"
+        android:id="@+id/fst_d4_envelope_head"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:translationY="210dp"
+        android:translationY="@dimen/fst_day4_envelope_translationY"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/fst_day4_envelope"
+        android:layout_marginBottom="-40dp"
+        android:src="@drawable/fst_day4_envelope_head"
         android:adjustViewBounds="true"
-        tools:translationY="450dp"
+        />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/fst_d4_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/bar"
+        />
+
+    <ImageView
+        android:id="@+id/fst_d4_envelope_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:translationY="@dimen/fst_day4_envelope_translationY"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="-40dp"
+        android:src="@drawable/fst_day4_envelope_body"
+        android:adjustViewBounds="true"
+        />
+
+    <TextView
+        android:id="@+id/fst_d4_envelope_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:text="@string/envelope_msg"
+        android:textColor="#828485"
+        android:gravity="center"
+        android:alpha="0"
+        android:translationY="@dimen/fst_day4_envelope_msg_translationY"
         />
 </RelativeLayout>

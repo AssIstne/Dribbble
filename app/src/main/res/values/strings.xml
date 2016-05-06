@@ -10,4 +10,10 @@
     <string name="bb_comment">
         The Brooklyn Bridge is a hybrid cable-stayed suspension bridge in New York City
     </string>
+    <string name="envelope_msg">
+        release to add\nto your envelope
+    </string>
+    <string name="done_msg">
+        Your card\nsuccessfully added
+    </string>
 </resources>
