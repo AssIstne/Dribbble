@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.assistne.dribbble.emailreceipt.EmailReceiptActivity;
 import com.assistne.dribbble.framestday004.FStD4Activity;
 
 public class MainActivity extends Activity {
@@ -21,5 +22,9 @@ public class MainActivity extends Activity {
 
     public void goAnimationActivity(View view) {
         startActivity(new Intent(this, AnimationActivity.class));
+    }
+
+    public void goEmailReceipt(View view) {
+        startActivity(new Intent(this, EmailReceiptActivity.class));
     }
 }

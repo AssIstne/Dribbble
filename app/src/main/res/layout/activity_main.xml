@@ -21,4 +21,11 @@
         android:text="Framer Studio Day004"
         android:onClick="goFStD4Activity"
         />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Email Receipt"
+        android:onClick="goEmailReceipt"
+        />
 </LinearLayout>

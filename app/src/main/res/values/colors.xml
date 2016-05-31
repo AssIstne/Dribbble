@@ -8,4 +8,6 @@
     <color name="green">#8abeb1</color>
     <color name="blue">#95d3f2</color>
     <color name="purple">#9d83bc</color>
+
+    <color name="pay_pal_blue">#3b95ff</color>
 </resources>
