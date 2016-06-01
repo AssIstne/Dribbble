@@ -6,6 +6,184 @@
     >
 
     <RelativeLayout
+        android:id="@+id/email_receipt_span_header"
         android:layout_width="match_parent"
-        android:layout_height="200dp"></RelativeLayout>
+        android:layout_height="0dp"
+        android:layout_weight="0.3"
+        android:background="@android:color/white"
+        >
+
+        <ImageView
+            android:id="@+id/email_receipt_img_paypal"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_paypal"
+            android:layout_marginStart="35dp"
+            android:layout_marginTop="16dp"
+            />
+
+        <TextView
+            android:id="@+id/email_receipt_txt_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignTop="@id/email_receipt_img_paypal"
+            android:textSize="16sp"
+            android:textColor="@color/grey_500"
+            android:text="25.04.2016"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@id/email_receipt_txt_date"
+            android:layout_below="@id/email_receipt_txt_date"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp"
+            android:textColor="@color/grey_500"
+            android:text="0f-113"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="-40dp"
+            android:layout_below="@id/email_receipt_txt_date"
+            android:layout_marginTop="55dp"
+            android:textSize="16sp"
+            android:textColor="@color/grey_300"
+            android:text="25042016"
+            android:transformPivotX="0dp"
+            android:transformPivotY="0dp"
+            android:rotation="270"
+            android:alpha="0.5"
+            />
+
+        <View
+            android:id="@+id/email_receipt_img_line"
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:layout_below="@id/email_receipt_img_paypal"
+            android:layout_marginTop="45dp"
+            android:layout_marginBottom="20dp"
+            android:background="@color/pay_pal_blue"
+            />
+
+        <TextView
+            android:id="@+id/email_receipt_txt_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/email_receipt_img_line"
+            android:layout_alignStart="@id/email_receipt_img_paypal"
+            android:text="Vladyslav, Hi"
+            android:gravity="top"
+            android:textSize="19sp"
+            android:textColor="@color/grey_900"
+            />
+
+        <TextView
+            android:id="@+id/email_receipt_txt_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@id/email_receipt_txt_name"
+            android:layout_alignBottom="@id/email_receipt_img_line"
+            android:textSize="14sp"
+            android:textColor="@color/grey_500"
+            android:text="you've purchased three (3) items in our store:"
+            />
+    </RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/email_receipt_span_main"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.52"
+        android:orientation="vertical"
+        android:background="@drawable/email_receipt_bg"
+        >
+
+        <TextView
+            android:id="@+id/email_receipt_txt_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_centerHorizontal="true"
+            android:text="Cart:"
+            android:textSize="22sp"
+            android:textColor="@color/grey_900"
+            />
+
+        <LinearLayout
+            android:id="@+id/email_receipt_span_content"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_below="@id/email_receipt_txt_title"
+            android:layout_marginTop="16dp"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp"
+            android:orientation="vertical"
+            >
+            <com.assistne.dribbble.emailreceipt.ItemView
+                android:id="@+id/email_receipt_item_0"
+                android:layout_width="match_parent"
+                android:layout_height="60dp" />
+            <com.assistne.dribbble.emailreceipt.ItemView
+                android:id="@+id/email_receipt_item_1"
+                android:layout_width="match_parent"
+                android:layout_height="60dp" />
+            <com.assistne.dribbble.emailreceipt.ItemView
+                android:id="@+id/email_receipt_item_2"
+                android:layout_width="match_parent"
+                android:layout_height="60dp" />
+        </LinearLayout>
+        <View
+            android:id="@+id/email_receipt_img_line_yellow"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_below="@id/email_receipt_span_content"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="35dp"
+            android:background="@color/pay_pal_yellow"
+            />
+        <TextView
+            android:id="@+id/email_receipt_txt_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/email_receipt_img_line_yellow"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="35dp"
+            android:text="TOTAL"
+            android:textSize="19sp"
+            android:textColor="@color/grey_900"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBaseline="@id/email_receipt_txt_total"
+            android:layout_marginEnd="35dp"
+            android:text="$95.00"
+            android:textSize="19sp"
+            android:textColor="@color/grey_900"
+            />
+    </RelativeLayout>
+
+    <FrameLayout
+        android:id="@+id/email_receipt_span_code"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.18"
+        android:background="@drawable/email_receipt_code_bg"
+        >
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="25dp"
+            android:layout_marginEnd="25dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/email_receipt_code"
+            />
+    </FrameLayout>
 </LinearLayout>
