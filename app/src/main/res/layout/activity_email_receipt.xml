@@ -139,7 +139,7 @@
         <View
             android:id="@+id/email_receipt_img_line_yellow"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
+            android:layout_height="2dp"
             android:layout_below="@id/email_receipt_span_content"
             android:layout_marginStart="35dp"
             android:layout_marginEnd="35dp"
@@ -158,6 +158,7 @@
             />
 
         <TextView
+            android:id="@+id/email_receipt_txt_total_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -168,7 +169,15 @@
             android:textColor="@color/grey_900"
             />
     </RelativeLayout>
-
+    <View
+        android:id="@+id/email_receipt_img_dot_line_white"
+        android:layout_width="match_parent"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_height="2dp"
+        android:layout_gravity="top"
+        android:background="@drawable/email_receipt_dot_line_white"
+        />
     <FrameLayout
         android:id="@+id/email_receipt_span_code"
         android:layout_width="match_parent"

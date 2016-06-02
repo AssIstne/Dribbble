@@ -51,38 +51,40 @@ public class ItemView extends RelativeLayout {
         mLine.setVisibility(hasLine ? VISIBLE : GONE);
     }
 
-    public void show() {
-        Log.d(TAG, "show: ");
+    public AnimatorSet getShowAni() {
         setAllAlpha(0);
         prepareForShow();
+        long duration = 200;
+        long delay = 150;
         AnimatorSet animatorSet = new AnimatorSet();
         AnimatorSet numSet = new AnimatorSet();
-        ObjectAnimator numAlphaAni = ObjectAnimator.ofFloat(mNumTxt, "alpha", 1).setDuration(500);
-        ObjectAnimator numTraAni = ObjectAnimator.ofFloat(mNumTxt, "translationX", 0).setDuration(300);
+        ObjectAnimator numAlphaAni = ObjectAnimator.ofFloat(mNumTxt, "alpha", 1).setDuration(duration);
+        ObjectAnimator numTraAni = ObjectAnimator.ofFloat(mNumTxt, "translationX", 0).setDuration(duration);
         AnimatorSet nameSet = new AnimatorSet();
-        ObjectAnimator nameAlphaAni = ObjectAnimator.ofFloat(mNameTxt, "alpha", 1).setDuration(500);
-        ObjectAnimator nameTraAni = ObjectAnimator.ofFloat(mNameTxt, "translationX", 0).setDuration(300);
+        ObjectAnimator nameAlphaAni = ObjectAnimator.ofFloat(mNameTxt, "alpha", 1).setDuration(duration);
+        ObjectAnimator nameTraAni = ObjectAnimator.ofFloat(mNameTxt, "translationX", 0).setDuration(duration);
         nameSet.playTogether(nameAlphaAni, nameTraAni);
         AnimatorSet priceSet = new AnimatorSet();
-        ObjectAnimator priceAlphaAni = ObjectAnimator.ofFloat(mPriceTxt, "alpha", 1).setDuration(500);
-        ObjectAnimator priceTraAni = ObjectAnimator.ofFloat(mPriceTxt, "translationX", 0).setDuration(300);
+        ObjectAnimator priceAlphaAni = ObjectAnimator.ofFloat(mPriceTxt, "alpha", 1).setDuration(duration);
+        ObjectAnimator priceTraAni = ObjectAnimator.ofFloat(mPriceTxt, "translationX", 0).setDuration(duration);
         priceSet.playTogether(priceAlphaAni, priceTraAni);
-        AnimatorSet lineSet = null;
         if (mLine.getVisibility() == VISIBLE) {
-            lineSet = new AnimatorSet();
-            ObjectAnimator lineAlphaAni = ObjectAnimator.ofFloat(mLine, "alpha", 1).setDuration(700);
-            ObjectAnimator lineTraXAni = ObjectAnimator.ofFloat(mLine, "translationX", 0).setDuration(500);
-            ObjectAnimator lineTraYAni = ObjectAnimator.ofFloat(mLine, "translationY", 0).setDuration(500);
+            AnimatorSet lineSet = new AnimatorSet();
+            ObjectAnimator lineAlphaAni = ObjectAnimator.ofFloat(mLine, "alpha", 1).setDuration(duration);
+            ObjectAnimator lineTraXAni = ObjectAnimator.ofFloat(mLine, "translationX", 0).setDuration(duration);
+            ObjectAnimator lineTraYAni = ObjectAnimator.ofFloat(mLine, "translationY", 0).setDuration(duration);
             lineSet.playTogether(lineAlphaAni, lineTraXAni, lineTraYAni);
-
+            numSet.playTogether(numAlphaAni, numTraAni, lineSet);
+        } else {
+            numSet.playTogether(numAlphaAni, numTraAni);
         }
-        numSet.playTogether(numAlphaAni, numTraAni, lineSet);
-        animatorSet.playSequentially(numSet, nameSet, priceSet);
-        animatorSet.start();
+        animatorSet.play(numSet);
+        animatorSet.play(nameSet).after(delay);
+        animatorSet.play(priceSet).after(delay);
+        return animatorSet;
     }
 
-    public void hide() {
-        Log.d(TAG, "hide: ");
+    public AnimatorSet getHideAni() {
         float offset = -40;
         AnimatorSet animatorSet = new AnimatorSet();
         ObjectAnimator numAlphaAni = ObjectAnimator.ofFloat(mNumTxt, "alpha", 0);
@@ -91,18 +93,21 @@ public class ItemView extends RelativeLayout {
         ObjectAnimator nameTraAni = ObjectAnimator.ofFloat(mNameTxt, "translationX", offset);
         ObjectAnimator priceAlphaAni = ObjectAnimator.ofFloat(mPriceTxt, "alpha", 0);
         ObjectAnimator priceTraAni = ObjectAnimator.ofFloat(mPriceTxt, "translationX", offset);
-        ObjectAnimator lineAlphaAni = null;
-        ObjectAnimator lineTraYAni = null;
         if (mLine.getVisibility() == VISIBLE) {
-            lineAlphaAni = ObjectAnimator.ofFloat(mLine, "alpha", 0);
-            lineTraYAni = ObjectAnimator.ofFloat(mLine, "translationY", -offset/2);
+            ObjectAnimator lineAlphaAni = ObjectAnimator.ofFloat(mLine, "alpha", 0);
+            ObjectAnimator lineTraYAni = ObjectAnimator.ofFloat(mLine, "translationY", -offset/2);
+            animatorSet.playTogether(numAlphaAni, numTraAni,
+                    nameAlphaAni, nameTraAni,
+                    priceAlphaAni, priceTraAni,
+                    lineAlphaAni, lineTraYAni);
+        } else {
+            animatorSet.playTogether(numAlphaAni, numTraAni,
+                    nameAlphaAni, nameTraAni,
+                    priceAlphaAni, priceTraAni);
         }
         animatorSet.setDuration(400);
-        animatorSet.playTogether(numAlphaAni, numTraAni,
-                nameAlphaAni, nameTraAni,
-                priceAlphaAni, priceTraAni,
-                lineAlphaAni, lineTraYAni);
-        animatorSet.start();
+
+        return animatorSet;
     }
 
     private void setAllAlpha(float alpha) {
