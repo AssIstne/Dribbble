@@ -26,6 +26,9 @@
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:screenOrientation="portrait"
             />
+        <activity android:name=".yahooweather.YahooWeatherActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

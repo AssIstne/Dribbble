@@ -28,4 +28,11 @@
         android:text="Email Receipt"
         android:onClick="goEmailReceipt"
         />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Yahoo Weather"
+        android:onClick="goYahooWeather"
+        />
 </LinearLayout>
