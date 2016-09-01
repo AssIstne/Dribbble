@@ -29,6 +29,10 @@
         <activity android:name=".yahooweather.YahooWeatherActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:screenOrientation="portrait"/>
+
+        <activity android:name=".bezierindicator.BezierActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.assistne.dribbble.bezierindicator.BezierActivity;
 import com.assistne.dribbble.emailreceipt.EmailReceiptActivity;
 import com.assistne.dribbble.framestday004.FStD4Activity;
 import com.assistne.dribbble.yahooweather.YahooWeatherActivity;
@@ -31,5 +32,9 @@ public class MainActivity extends Activity {
 
     public void goYahooWeather(View view) {
         startActivity(new Intent(this, YahooWeatherActivity.class));
+    }
+
+    public void goBezierIndicator(View view) {
+        startActivity(new Intent(this, BezierActivity.class));
     }
 }

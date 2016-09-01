@@ -35,4 +35,10 @@
         android:text="Yahoo Weather"
         android:onClick="goYahooWeather"
         />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bezier Indicator"
+        android:onClick="goBezierIndicator"
+        />
 </LinearLayout>
