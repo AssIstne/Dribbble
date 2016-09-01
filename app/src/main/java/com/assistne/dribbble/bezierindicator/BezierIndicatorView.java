@@ -1,5 +1,7 @@
 package com.assistne.dribbble.bezierindicator;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -26,10 +28,20 @@ public class BezierIndicatorView extends View {
     private static final float MAGIC_FACTOR = 0.552284749831f;
     private float mDifference;
     private float mRadius;
+
+
+    private PointF mOriginDataLeft;
+    private PointF mOriginDataTop;
+    private PointF mOriginDataRight;
+    private PointF mOriginDataBottom;
+
     private PointF mDataLeft;
     private PointF mDataTop;
     private PointF mDataRight;
     private PointF mDataBottom;
+
+    private float mMaxHorizontalDistance;
+    private float mMaxVerticalDistance;
 
     public BezierIndicatorView(Context context) {
         this(context, null);
@@ -53,6 +65,18 @@ public class BezierIndicatorView extends View {
         mDataTop = new PointF(mRadius, -mRadius);
         mDataRight = new PointF(2 * mRadius, 0);
         mDataBottom = new PointF(mRadius, mRadius);
+
+        mOriginDataLeft = new PointF();
+        mOriginDataLeft.set(mDataLeft);
+        mOriginDataTop = new PointF();
+        mOriginDataTop.set(mDataTop);
+        mOriginDataRight = new PointF();
+        mOriginDataRight.set(mDataRight);
+        mOriginDataBottom = new PointF();
+        mOriginDataBottom.set(mDataBottom);
+
+        mMaxVerticalDistance =  mRadius / 6;
+        mMaxHorizontalDistance = mMaxVerticalDistance * 2;
     }
 
     @Override
@@ -88,32 +112,55 @@ public class BezierIndicatorView extends View {
     }
 
     public void moveBy(final float x) {
-        final float originX = mDataRight.x;
-        ValueAnimator animator = ValueAnimator.ofFloat(0, x, 0);
+        ValueAnimator animator = ValueAnimator.ofFloat(0, x);
         animator.setDuration(5000);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value = (float) animation.getAnimatedValue();
-                mDifference = mRadius * MAGIC_FACTOR * (1 + animation.getAnimatedFraction()/3);
-                    float delta = originX + value - mDataRight.x;
-                    Log.d(TAG, "onAnimationUpdate: " + delta);
-                    mDataRight.x = originX + value;
-                    if (mDataRight.x - mDataTop.x > 1.5 * mRadius) {
-                        mDataTop.x += delta;
-                        mDataBottom.x += delta;
-                    }
-                    if (mDataTop.x - mDataLeft.x > 1.5 * mRadius) {
-                        mDataLeft.x += delta;
-                    }
+                if (value < mMaxHorizontalDistance) {
+                    float fraction = value / mMaxHorizontalDistance;
+                    float deltaY = mMaxVerticalDistance * fraction;
+                    mDataRight.x = mOriginDataRight.x + value;
+                    mDataTop.x = mOriginDataTop.x + value;
+                    mDataTop.y = mOriginDataTop.y + deltaY;
+                    mDataBottom.x = mOriginDataBottom.x + value;
+                    mDataBottom.y = mOriginDataBottom.y - deltaY;
+                } else {
+                    mDataRight.x = mOriginDataRight.x + value;
+                    mDataTop.x = mOriginDataTop.x + value;
+                    mDataTop.y = mOriginDataTop.y + mMaxVerticalDistance;
+                    mDataBottom.x = mOriginDataBottom.x + value;
+                    mDataBottom.y = mOriginDataBottom.y - mMaxVerticalDistance;
+                    mDataLeft.x = mOriginDataLeft.x + value - mMaxHorizontalDistance;
+                }
                 invalidate();
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                ValueAnimator anim = ValueAnimator.ofFloat(0, mDataRight.x - mDataLeft.x - 2 * mRadius);
+                anim.setInterpolator(new BounceInterpolator());
+                anim.setDuration(2500);
+                final float origin = mDataLeft.x;
+                anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation1) {
+                        mDataLeft.x = origin + (float)animation1.getAnimatedValue();
+                        invalidate();
+                    }
+                });
+                anim.start();
             }
         });
         animator.start();
     }
 
     public void bounce() {
-        final float originX = mDataRight.x;
+        final float originX = mDataLeft.x;
+        final float originTopY = mDataTop.y;
+        final float originBottomY = mDataBottom.y;
         ValueAnimator animator = ValueAnimator.ofFloat(0, 100);
         animator.setInterpolator(new BounceInterpolator());
         animator.setDuration(5000);
