@@ -32,7 +32,7 @@
 
         <activity android:name=".bezierindicator.BezierActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="landscape"/>
     </application>
 
 </manifest>

@@ -1,18 +1,14 @@
 package com.assistne.dribbble.bezierindicator;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PointF;
+import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.view.animation.BounceInterpolator;
 
 /**
  * 仅水平位移
@@ -26,22 +22,23 @@ public class BezierIndicatorView extends View {
     private Paint mPaint;
     private Path mPath;
     private static final float MAGIC_FACTOR = 0.552284749831f;
+    private static final float MARGIN_FACTOR = 2.3f;
+
     private float mDifference;
     private float mRadius;
+    private float mDotMargin;
 
+    private float mMaxStretchDistance;
+    private float mMaxControlDistance;
 
-    private PointF mOriginDataLeft;
-    private PointF mOriginDataTop;
-    private PointF mOriginDataRight;
-    private PointF mOriginDataBottom;
+    private HorizontalBezierPoint mLeftPoint;
+    private VerticalBezierPoint mTopPoint;
+    private HorizontalBezierPoint mRightPoint;
+    private VerticalBezierPoint mBottomPoint;
 
-    private PointF mDataLeft;
-    private PointF mDataTop;
-    private PointF mDataRight;
-    private PointF mDataBottom;
+    private int mPosition;
+    private int[] mClolr;
 
-    private float mMaxHorizontalDistance;
-    private float mMaxVerticalDistance;
 
     public BezierIndicatorView(Context context) {
         this(context, null);
@@ -60,128 +57,155 @@ public class BezierIndicatorView extends View {
         mPath = new Path();
 
         mRadius = 100;
+        mDotMargin = mRadius * MARGIN_FACTOR;
+        mMaxStretchDistance = mRadius;
         mDifference = mRadius * MAGIC_FACTOR;
-        mDataLeft = new PointF(0, 0);
-        mDataTop = new PointF(mRadius, -mRadius);
-        mDataRight = new PointF(2 * mRadius, 0);
-        mDataBottom = new PointF(mRadius, mRadius);
+        mMaxControlDistance = mDifference * 0.45f;
 
-        mOriginDataLeft = new PointF();
-        mOriginDataLeft.set(mDataLeft);
-        mOriginDataTop = new PointF();
-        mOriginDataTop.set(mDataTop);
-        mOriginDataRight = new PointF();
-        mOriginDataRight.set(mDataRight);
-        mOriginDataBottom = new PointF();
-        mOriginDataBottom.set(mDataBottom);
+        mLeftPoint = new HorizontalBezierPoint(0, 0, mDifference);
+        mTopPoint = new VerticalBezierPoint(mRadius, -mRadius, mDifference);
+        mRightPoint = new HorizontalBezierPoint(2 * mRadius, 0, mDifference);
+        mBottomPoint = new VerticalBezierPoint(mRadius, mRadius, mDifference);
 
-        mMaxVerticalDistance =  mRadius / 6;
-        mMaxHorizontalDistance = mMaxVerticalDistance * 2;
-    }
+        mClolr = new int[]{Color.parseColor("#fcc04d"),//黄
+                 Color.parseColor("#00c3e2"),// 蓝
+                 Color.parseColor("#fe626d")};// 红
+}
 
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
         canvas.translate(0, getHeight()/2);
-        calculateBezierPath(mPath);
-        canvas.drawPath(mPath, mPaint);
+        setStrokePaint();
+        canvas.drawCircle(mRadius, 0, mRadius, mPaint);
+        canvas.translate(mDotMargin + 2 * mRadius, 0);
+        canvas.drawCircle(mRadius, 0, mRadius, mPaint);
+        canvas.translate(mDotMargin + 2 * mRadius, 0);
+        canvas.drawCircle(mRadius, 0, mRadius, mPaint);
+        canvas.restore();
+        canvas.save();
+        canvas.translate(0, getHeight()/2);
+        drawBezierPath(canvas);
+        setRectPaint();
+        canvas.drawRect(mTopPoint.dataPoint.x - mRadius, mLeftPoint.dataPoint.y - mRadius,
+                mTopPoint.dataPoint.x + mRadius, mLeftPoint.dataPoint.y + mRadius, mPaint);
         canvas.restore();
     }
 
-    private void getCirclePath(Path path, float centerX, float centerY, float radius) {
-        float circleLeft = centerX - radius;
-        float circleRight = centerX + radius;
-        float circleTop = centerY - radius;
-        float circleBottom = centerY + radius;
-        float difference = radius * MAGIC_FACTOR;
+    private void setStrokePaint() {
+        mPaint.setColor(Color.GREEN);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setPathEffect(null);
+        mPaint.setStrokeWidth(2);
+    }
 
-        path.moveTo(circleLeft, centerY);
-        path.cubicTo(circleLeft, centerY - difference, centerX - difference, circleTop, centerX, circleTop);
-        path.cubicTo(centerX + difference, circleTop, circleRight, centerY - difference, circleRight, centerY);
-        path.cubicTo(circleRight, centerY + difference, centerX + difference, circleBottom, centerX, circleBottom);
-        path.cubicTo(centerX - difference, circleBottom, circleLeft, centerY + difference, circleLeft, centerY);
+    private void setRectPaint() {
+        mPaint.setColor(Color.BLUE);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setPathEffect(new DashPathEffect(new float[]{8f, 8f}, 8));
+        mPaint.setStrokeWidth(2);
+    }
+
+    private void drawBezierPath(Canvas canvas) {
+        calculateBezierPath(mPath);
+        setFillPaint();
+        canvas.drawPath(mPath, mPaint);
+    }
+
+    private void setFillPaint() {
+        mPaint.setColor(Color.RED);
+        mPaint.setStyle(Paint.Style.FILL);
     }
 
     private void calculateBezierPath(Path path) {
         path.reset();
-        path.moveTo(mDataLeft.x, mDataLeft.y);
-        path.cubicTo(mDataLeft.x, mDataLeft.y - mDifference, mDataTop.x - mDifference, mDataTop.y, mDataTop.x, mDataTop.y);
-        path.cubicTo(mDataTop.x + mDifference, mDataTop.y, mDataRight.x, mDataRight.y - mDifference, mDataRight.x, mDataRight.y);
-        path.cubicTo(mDataRight.x, mDataRight.y + mDifference, mDataBottom.x + mDifference, mDataBottom.y, mDataBottom.x, mDataBottom.y);
-        path.cubicTo(mDataBottom.x - mDifference, mDataBottom.y, mDataLeft.x, mDataLeft.y + mDifference, mDataLeft.x, mDataLeft.y);
+        path.moveTo(mLeftPoint.dataPoint.x, mLeftPoint.dataPoint.y);
+        path.cubicTo(mLeftPoint.topControlPoint.x, mLeftPoint.topControlPoint.y,
+                mTopPoint.leftControlPoint.x, mTopPoint.leftControlPoint.y,
+                mTopPoint.dataPoint.x, mTopPoint.dataPoint.y);
+        path.cubicTo(mTopPoint.rightControlPoint.x, mTopPoint.rightControlPoint.y,
+                mRightPoint.topControlPoint.x, mRightPoint.topControlPoint.y,
+                mRightPoint.dataPoint.x, mRightPoint.dataPoint.y);
+        path.cubicTo(mRightPoint.bottomControlPoint.x, mRightPoint.bottomControlPoint.y,
+                mBottomPoint.rightControlPoint.x, mBottomPoint.rightControlPoint.y,
+                mBottomPoint.dataPoint.x, mBottomPoint.dataPoint.y);
+        path.cubicTo(mBottomPoint.leftControlPoint.x, mBottomPoint.leftControlPoint.y,
+                mLeftPoint.bottomControlPoint.x, mLeftPoint.bottomControlPoint.y,
+                mLeftPoint.dataPoint.x, mLeftPoint.dataPoint.y);
     }
 
-    public void moveBy(final float x) {
-        ValueAnimator animator = ValueAnimator.ofFloat(0, x);
-        animator.setDuration(5000);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                if (value < mMaxHorizontalDistance) {
-                    float fraction = value / mMaxHorizontalDistance;
-                    float deltaY = mMaxVerticalDistance * fraction;
-                    mDataRight.x = mOriginDataRight.x + value;
-                    mDataTop.x = mOriginDataTop.x + value;
-                    mDataTop.y = mOriginDataTop.y + deltaY;
-                    mDataBottom.x = mOriginDataBottom.x + value;
-                    mDataBottom.y = mOriginDataBottom.y - deltaY;
-                } else {
-                    mDataRight.x = mOriginDataRight.x + value;
-                    mDataTop.x = mOriginDataTop.x + value;
-                    mDataTop.y = mOriginDataTop.y + mMaxVerticalDistance;
-                    mDataBottom.x = mOriginDataBottom.x + value;
-                    mDataBottom.y = mOriginDataBottom.y - mMaxVerticalDistance;
-                    mDataLeft.x = mOriginDataLeft.x + value - mMaxHorizontalDistance;
-                }
-                invalidate();
-            }
-        });
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                ValueAnimator anim = ValueAnimator.ofFloat(0, mDataRight.x - mDataLeft.x - 2 * mRadius);
-                anim.setInterpolator(new BounceInterpolator());
-                anim.setDuration(2500);
-                final float origin = mDataLeft.x;
-                anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation1) {
-                        mDataLeft.x = origin + (float)animation1.getAnimatedValue();
-                        invalidate();
-                    }
-                });
-                anim.start();
-            }
-        });
-        animator.start();
+    public void move(int position, float fraction) {
+        mPosition = position;
+        // 0 - 1变化
+        if(fraction >= 0 && fraction <= 0.2){// 拉扯右点阶段
+            setStage1Point(fraction * 5);
+        }else if(fraction > 0.2 && fraction <= 0.5){
+            setStage2Point((fraction - 0.2f) / 3f * 10f);
+        }else if(fraction > 0.5 && fraction <= 0.8){
+            setStage3Point((fraction - 0.5f) / 3f * 10f);
+        }else if(fraction > 0.8 && fraction <= 0.9){
+            setStage4Point((fraction - 0.8f) * 10f);
+        }else if(fraction > 0.9 && fraction <=1 ){
+            setStage5Point((fraction - 0.9f) * 10f);
+        }
+
+        if (fraction > 0.2) {
+            // 位移
+            float offset = (mDotMargin + 2 * mRadius - mMaxStretchDistance) * ((fraction - 0.2f) / 0.8f);
+            offset = offset > 0 ? offset : 0;
+            mLeftPoint.movePoint(offset);
+            mTopPoint.movePoint(offset);
+            mRightPoint.movePoint(offset);
+            mBottomPoint.movePoint(offset);
+        }
+
+        if (fraction > 0.7) {
+            float colorFraction = (fraction - 0.7f) / 0.3f;
+
+        }
+        invalidate();
     }
 
-    public void bounce() {
-        final float originX = mDataLeft.x;
-        final float originTopY = mDataTop.y;
-        final float originBottomY = mDataBottom.y;
-        ValueAnimator animator = ValueAnimator.ofFloat(0, 100);
-        animator.setInterpolator(new BounceInterpolator());
-        animator.setDuration(5000);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                mDifference = mRadius * MAGIC_FACTOR * (1 + animation.getAnimatedFraction()/2);
-                Log.d(TAG, "onAnimationUpdate: " + value);
-                float delta = originX + value - mDataRight.x;
-                mDataRight.x = originX + value;
-                if (mDataRight.x - mDataTop.x > 1.5 * mRadius) {
-                    mDataTop.x += delta;
-                    mDataBottom.x += delta;
-                }
-                if (mDataTop.x - mDataLeft.x > 1.5 * mRadius) {
-                    mDataLeft.x += delta;
-                }
-                invalidate();
-            }
-        });
-        animator.start();
+    private void setCirclePoint() {
+        float startX = mPosition * (mDotMargin + 2 * mRadius);
+        mLeftPoint.setPoint(startX, 0, mDifference);
+        mTopPoint.setPoint(startX + mRadius, -mRadius, mDifference);
+        mRightPoint.setPoint(startX + 2 * mRadius, 0, mDifference);
+        mBottomPoint.setPoint(startX + mRadius, mRadius, mDifference);
+    }
+
+    private void setStage1Point(float fraction) {
+        setCirclePoint();
+        mRightPoint.movePoint(mMaxStretchDistance * fraction);
+    }
+
+    private void setStage2Point(float fraction) {
+        setStage1Point(1);
+        mTopPoint.movePoint(mMaxStretchDistance / 2 * fraction);
+        mBottomPoint.movePoint(mMaxStretchDistance / 2 * fraction);
+
+        mLeftPoint.adjustControlPoint(mMaxControlDistance * fraction);
+        mRightPoint.adjustControlPoint(mMaxControlDistance * fraction);
+    }
+
+    private void setStage3Point(float fraction) {
+        setStage2Point(1);
+        mTopPoint.movePoint(mMaxStretchDistance / 2 * fraction);
+        mBottomPoint.movePoint(mMaxStretchDistance / 2 * fraction);
+
+        mLeftPoint.adjustControlPoint(-mMaxControlDistance * fraction);
+        mRightPoint.adjustControlPoint(-mMaxControlDistance * fraction);
+
+        mLeftPoint.movePoint(mMaxStretchDistance / 2 * fraction);
+    }
+
+    private void setStage4Point(float fraction) {
+        setStage3Point(1);
+        mLeftPoint.movePoint(mMaxStretchDistance / 2 * fraction);
+    }
+
+    private void setStage5Point(float fraction) {
+        setStage4Point(1);
+        mLeftPoint.movePoint((float) (Math.sin(Math.PI*fraction)*(2/10f*mRadius)));
     }
 }
