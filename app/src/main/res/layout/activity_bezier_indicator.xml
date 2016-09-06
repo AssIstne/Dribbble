@@ -9,23 +9,16 @@
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="16dp"
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/bezier_indicator"
         />
 
     <com.assistne.dribbble.bezierindicator.BezierIndicatorView
         android:id="@id/bezier_indicator"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@+id/button"
-        />
-    <Button
-        android:id="@+id/button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="start"
-        android:layout_alignParentEnd="true"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         />
 </RelativeLayout>

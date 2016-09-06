@@ -3,11 +3,10 @@ package com.assistne.dribbble.bezierindicator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -36,9 +35,14 @@ public class BezierIndicatorView extends View {
     private HorizontalBezierPoint mRightPoint;
     private VerticalBezierPoint mBottomPoint;
 
-    private int mPosition;
-    private int[] mClolr;
-
+    private int mStartPosition;
+    private int mTargetPosition;
+    private int[] mColor;
+    private int mStartColor;
+    private int mTargetColor;
+    private int mCurrentColor;
+    private Paint mBackgroundPaint;
+    private float mLastFraction;
 
     public BezierIndicatorView(Context context) {
         this(context, null);
@@ -53,7 +57,11 @@ public class BezierIndicatorView extends View {
         mPaint = new Paint();
         mPaint.setColor(Color.RED);
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setStrokeWidth(8);
+
+        mBackgroundPaint = new Paint();
+        mBackgroundPaint.setColor(Color.GREEN);
+        mBackgroundPaint.setStyle(Paint.Style.STROKE);
+        mBackgroundPaint.setStrokeWidth(2);
         mPath = new Path();
 
         mRadius = 100;
@@ -67,54 +75,38 @@ public class BezierIndicatorView extends View {
         mRightPoint = new HorizontalBezierPoint(2 * mRadius, 0, mDifference);
         mBottomPoint = new VerticalBezierPoint(mRadius, mRadius, mDifference);
 
-        mClolr = new int[]{Color.parseColor("#fcc04d"),//黄
+        mColor = new int[]{Color.parseColor("#fcc04d"),//黄
                  Color.parseColor("#00c3e2"),// 蓝
                  Color.parseColor("#fe626d")};// 红
-}
+        mCurrentColor = mColor[0];
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension((int) (6 * mRadius + 2 * mDotMargin),
+                (int) (2 * mRadius));
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
         canvas.translate(0, getHeight()/2);
-        setStrokePaint();
-        canvas.drawCircle(mRadius, 0, mRadius, mPaint);
-        canvas.translate(mDotMargin + 2 * mRadius, 0);
-        canvas.drawCircle(mRadius, 0, mRadius, mPaint);
-        canvas.translate(mDotMargin + 2 * mRadius, 0);
-        canvas.drawCircle(mRadius, 0, mRadius, mPaint);
+        drawBezierPath(canvas);
         canvas.restore();
         canvas.save();
         canvas.translate(0, getHeight()/2);
-        drawBezierPath(canvas);
-        setRectPaint();
-        canvas.drawRect(mTopPoint.dataPoint.x - mRadius, mLeftPoint.dataPoint.y - mRadius,
-                mTopPoint.dataPoint.x + mRadius, mLeftPoint.dataPoint.y + mRadius, mPaint);
+        canvas.drawCircle(mRadius, 0, mRadius, mBackgroundPaint);
+        canvas.translate(mDotMargin + 2 * mRadius, 0);
+        canvas.drawCircle(mRadius, 0, mRadius, mBackgroundPaint);
+        canvas.translate(mDotMargin + 2 * mRadius, 0);
+        canvas.drawCircle(mRadius, 0, mRadius, mBackgroundPaint);
         canvas.restore();
-    }
-
-    private void setStrokePaint() {
-        mPaint.setColor(Color.GREEN);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setPathEffect(null);
-        mPaint.setStrokeWidth(2);
-    }
-
-    private void setRectPaint() {
-        mPaint.setColor(Color.BLUE);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setPathEffect(new DashPathEffect(new float[]{8f, 8f}, 8));
-        mPaint.setStrokeWidth(2);
     }
 
     private void drawBezierPath(Canvas canvas) {
         calculateBezierPath(mPath);
-        setFillPaint();
+        mPaint.setColor(mCurrentColor);
         canvas.drawPath(mPath, mPaint);
-    }
-
-    private void setFillPaint() {
-        mPaint.setColor(Color.RED);
-        mPaint.setStyle(Paint.Style.FILL);
     }
 
     private void calculateBezierPath(Path path) {
@@ -134,8 +126,30 @@ public class BezierIndicatorView extends View {
                 mLeftPoint.dataPoint.x, mLeftPoint.dataPoint.y);
     }
 
-    public void move(int position, float fraction) {
-        mPosition = position;
+    public void setPosition(int position) {
+        Log.d(TAG, "### reset: ");
+        mStartPosition = position;
+        mStartColor = 0;
+        mTargetColor = 0;
+        mLastFraction = 0;
+    }
+
+    public void move(float fraction) {
+        Log.d(TAG, "##move: " + mStartPosition + "  " + fraction);
+        if (mTargetColor == 0 && mLastFraction != 0) {
+            if (mLastFraction - fraction < 0) {
+                mTargetPosition = Math.min(2, mStartPosition + 1);
+            } else {
+                mTargetPosition = mStartPosition;
+                mStartPosition = Math.max(0, mStartPosition - 1);
+            }
+            mStartColor = mColor[mStartPosition];
+            mTargetColor = mColor[mTargetPosition];
+        }
+        mLastFraction = fraction;
+        if (mStartPosition == mTargetPosition) {
+            return;
+        }
         // 0 - 1变化
         if(fraction >= 0 && fraction <= 0.2){// 拉扯右点阶段
             setStage1Point(fraction * 5);
@@ -158,16 +172,32 @@ public class BezierIndicatorView extends View {
             mRightPoint.movePoint(offset);
             mBottomPoint.movePoint(offset);
         }
-
-        if (fraction > 0.7) {
-            float colorFraction = (fraction - 0.7f) / 0.3f;
-
+        // 颜色的变化
+        if (fraction > 0.4 && mStartColor != 0 && mTargetColor != 0) {
+            float colorFraction = (fraction - 0.4f) / 0.6f;
+            int red = (int) (Color.red(mStartColor) + (Color.red(mTargetColor) - Color.red(mStartColor)) * colorFraction);
+            int blue = (int) (Color.blue(mStartColor) + (Color.blue(mTargetColor) - Color.blue(mStartColor)) * colorFraction);
+            int green = (int) (Color.green(mStartColor) + (Color.green(mTargetColor) - Color.green(mStartColor)) * colorFraction);
+            mCurrentColor = Color.argb(255, red, green, blue);
+        } else {
+            mCurrentColor = mStartColor;
         }
         invalidate();
     }
 
     private void setCirclePoint() {
-        float startX = mPosition * (mDotMargin + 2 * mRadius);
+        float startX;
+        if (mStartPosition == 0) {
+            startX = 0;
+        } else if (mStartPosition == 2) {
+            startX = mDotMargin + 2 * mRadius;
+        } else {
+            if (mTargetPosition - mStartPosition > 0) {
+                startX = mDotMargin + 2 * mRadius;
+            } else {
+                startX = 0;
+            }
+        }
         mLeftPoint.setPoint(startX, 0, mDifference);
         mTopPoint.setPoint(startX + mRadius, -mRadius, mDifference);
         mRightPoint.setPoint(startX + 2 * mRadius, 0, mDifference);

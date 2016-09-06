@@ -1,14 +1,11 @@
 package com.assistne.dribbble.bezierindicator;
 
-import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.assistne.dribbble.R;
 
@@ -18,6 +15,9 @@ import com.assistne.dribbble.R;
 @SuppressWarnings("ConstantConditions")
 public class BezierActivity extends AppCompatActivity {
     private static final String TAG = "#BezierActivity";
+    private int mLastState;
+    private int mStartPosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,17 +46,21 @@ public class BezierActivity extends AppCompatActivity {
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener(){
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.d(TAG, "onPageScrolled: " +position+ "  " + positionOffset);
-                if (positionOffset != 0) {
-                    indicatorView.move(position, positionOffset);
+                if (position == mStartPosition) {
+                    indicatorView.move(positionOffset);
                 }
+                mStartPosition = position;
             }
-        });
-        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View v) {
-                viewPager.setCurrentItem(2, true);
+            public void onPageScrollStateChanged(int state) {
+                super.onPageScrollStateChanged(state);
+                if (mLastState == ViewPager.SCROLL_STATE_IDLE && state == ViewPager.SCROLL_STATE_DRAGGING) {
+                    indicatorView.setPosition(viewPager.getCurrentItem());
+                }
+                mLastState = state;
             }
+
         });
     }
 }
