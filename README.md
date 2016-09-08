@@ -19,3 +19,7 @@ This project makes designs in [Dribbble.com](https://dribbble.com/) to come true
 ### [Simple fun navigation](https://dribbble.com/shots/2227686-Settings-fun-navigation)
 <img src="https://d13yacurqjgara.cloudfront.net/users/30252/screenshots/2227686/dribbble-fast.gif" align="top" width="400">
 <img src="https://github.com/AssIstne/Dribbble/blob/master/snapshot/bezierIndicator.gif" width="400">
+
+### [Download animation](https://dribbble.com/shots/2939772--Daily-gif-Download)
+<img src="https://d13yacurqjgara.cloudfront.net/users/885937/screenshots/2939772/__-1_1.gif" align="top" width="400">
+<img src="https://github.com/AssIstne/Dribbble/blob/master/snapshot/downloadAnim.gif" width="400">
