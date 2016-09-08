@@ -33,6 +33,9 @@
         <activity android:name=".bezierindicator.BezierActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:screenOrientation="landscape"/>
+        <activity android:name=".downloadanim.DownloadActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="landscape"/>
     </application>
 
 </manifest>
