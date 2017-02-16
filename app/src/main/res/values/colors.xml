@@ -30,4 +30,17 @@
 
     <color name="pay_pal_yellow">#fedb25</color>
     <color name="pay_pal_blue">#3b95ff</color>
+
+    <color name="dn_blue">#42d3fc</color>
+    <color name="dn_blue_dark">#2f3d6b</color>
+    <color name="dn_purple">#8638bc</color>
+    <color name="dn_purple_dark">#3d2472</color>
+    <color name="dn_yellow">#ffc760</color>
+    <color name="dn_yellow_dark">#403a48</color>
+    <color name="dn_red">#ee47ae</color>
+    <color name="dn_red_dark">#3c2557</color>
+    <color name="dn_green">#2dc495</color>
+    <color name="dn_green_dark">#1e3750</color>
+    <color name="dn_bg">#222851</color>
+    <color name="dn_icon">#6f78c5</color>
 </resources>
