@@ -8,4 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="DNavigationTheme" parent="AppTheme">
+        <item name="colorPrimaryDark">@color/dn_bg</item>
+    </style>
 </resources>

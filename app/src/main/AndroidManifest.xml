@@ -30,7 +30,8 @@
         <activity
             android:name=".downloadanim.DownloadActivity"
             android:screenOrientation="landscape"/>
-        <activity android:name=".dashboardnavigation.DNavigationActivity">
+        <activity android:name=".dashboardnavigation.DNavigationActivity"
+            android:theme="@style/DNavigationTheme">
         </activity>
     </application>
 
