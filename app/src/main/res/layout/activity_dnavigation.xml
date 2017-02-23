@@ -9,29 +9,45 @@
     tools:context="com.assistne.dribbble.dashboardnavigation.DNavigationActivity">
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:fitsSystemWindows="true"
+        android:elevation="4dp"
         >
         <com.assistne.dribbble.dashboardnavigation.CollapsingLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="320dp"
             app:layout_scrollFlags="snap|scroll|exitUntilCollapsed"
             android:fitsSystemWindows="true"
-            android:background="@color/dn_purple"
+            android:background="@color/dn_bg"
             android:minHeight="55dp"
             android:elevation="4dp"
             >
             <View
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:background="@color/dn_green"
+                android:layout_width="150dp"
+                android:layout_height="20dp"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/dn_title"
+                android:layout_marginTop="17dp"
+                android:tag="pin"
                 />
-            <View
-                android:layout_width="100dp"
-                android:layout_height="30dp"
-                android:background="#47ffffff"
-                android:layout_centerInParent="true"
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/dn_back"
+                android:layout_marginTop="7dp"
+                android:layout_marginLeft="7dp"
+                android:tag="pin"
+                />
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="5dp"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/dn_menu"
+                android:layout_marginTop="7dp"
+                android:layout_marginRight="7dp"
+                android:tag="pin"
                 />
         </com.assistne.dribbble.dashboardnavigation.CollapsingLayout>
     </android.support.design.widget.AppBarLayout>
