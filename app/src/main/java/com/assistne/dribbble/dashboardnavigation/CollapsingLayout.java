@@ -5,7 +5,6 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.WindowInsetsCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewParent;
 import android.widget.RelativeLayout;
@@ -89,7 +88,6 @@ public class CollapsingLayout extends RelativeLayout {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-        Log.d(TAG, "onLayout: ");
         // Update our child view offset helpers
         for (int i = 0, z = getChildCount(); i < z; i++) {
             final View child = getChildAt(i);
@@ -110,15 +108,16 @@ public class CollapsingLayout extends RelativeLayout {
     private class OffsetUpdateListener implements AppBarLayout.OnOffsetChangedListener {
         @Override
         public void onOffsetChanged(AppBarLayout layout, int verticalOffset) {
-            Log.d(TAG, "onOffsetChanged: " + verticalOffset);
-            for (int i = 1, z = getChildCount(); i < z; i++) {
+            for (int i = 0, z = getChildCount(); i < z; i++) {
                 final View child = getChildAt(i);
                 final ViewOffsetHelper offsetHelper = getViewOffsetHelper(child);
-                int offset = Math.max(Math.min(-verticalOffset, 0), getMaxOffsetForPinChild(child));
-                Log.d(TAG, "child: " + offset);
+                int offset;
+                if ("pin".equals(child.getTag())) {
+                    offset = constrain(-verticalOffset, 0, getMaxOffsetForPinChild(child));
+                } else {
+                    offset = Math.round(-verticalOffset * 0.5f);
+                }
                 offsetHelper.setTopAndBottomOffset(offset);
-//                offsetHelper.setTopAndBottomOffset(
-//                        Math.round(-verticalOffset * 0.5f));
             }
         }
     }
@@ -140,5 +139,9 @@ public class CollapsingLayout extends RelativeLayout {
                 - offsetHelper.getLayoutTop()
                 - child.getHeight()
                 - lp.bottomMargin;
+    }
+
+    static int constrain(int amount, int low, int high) {
+        return amount < low ? low : (amount > high ? high : amount);
     }
 }
