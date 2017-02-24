@@ -22,9 +22,9 @@ public class PieChartView extends View {
     private float[] mDegreeArr = new float[] {360};
     private float mTotal = 0;
     @ColorRes
-    private int[] mColorArr = new int[] {R.color.dn_blue, R.color.dn_green, R.color.dn_red, R.color.dn_yellow, R.color.dn_purple};
+    public static final int[] COLOR_ARR = new int[] {R.color.dn_blue, R.color.dn_green, R.color.dn_red, R.color.dn_yellow, R.color.dn_purple};
     @ColorRes
-    private int[] mColorDarkArr = new int[] {R.color.dn_blue_dark, R.color.dn_green_dark, R.color.dn_red_dark, R.color.dn_yellow_dark, R.color.dn_purple_dark};
+    private static final int[] mColorDarkArr = new int[] {R.color.dn_blue_dark, R.color.dn_green_dark, R.color.dn_red_dark, R.color.dn_yellow_dark, R.color.dn_purple_dark};
 
     private Paint mPaint;
     private int mCircleMargin;// 小同心圆半径
@@ -126,7 +126,7 @@ public class PieChartView extends View {
 
     private void drawPieAt(int index, Canvas canvas) {
         final float degree = mDegreeArr[index];
-        mPaint.setColor(getResources().getColor(index == mCurrentIndex ? mColorArr[index] : mColorDarkArr[index]));
+        mPaint.setColor(getResources().getColor(index == mCurrentIndex ? COLOR_ARR[index] : mColorDarkArr[index]));
         mOuterPath.moveTo(canvas.getWidth()/2, canvas.getHeight()/2);
         mOuterPath.arcTo(mRect, 90 - degree/2, degree, false);
         mOuterPath.offset(0, (float) (mOffset /Math.sin(degree/360 * Math.PI)));
