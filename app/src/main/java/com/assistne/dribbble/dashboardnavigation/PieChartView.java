@@ -2,7 +2,6 @@ package com.assistne.dribbble.dashboardnavigation;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -47,7 +46,7 @@ public class PieChartView extends View {
     public PieChartView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mPaint = new Paint();
-        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mPaint.setStyle(Paint.Style.FILL);
         mPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
         mTotal = total();
@@ -123,19 +122,10 @@ public class PieChartView extends View {
                 sum += mDegreeArr[i];
             }
         }
-        canvas.save();
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(Color.RED);
-        canvas.drawCircle(getMeasuredWidth()/2, getMeasuredHeight()/2, getMeasuredWidth()/2, mPaint);
-        canvas.drawCircle(getMeasuredWidth()/2, getMeasuredHeight()/2, mCircleMargin, mPaint);
-        canvas.drawLine(0, getMeasuredHeight()/2, getMeasuredWidth(), getMeasuredHeight()/2, mPaint);
-        canvas.drawLine(getMeasuredWidth()/2, 0, getMeasuredWidth()/2, getMeasuredHeight(), mPaint);
-        canvas.restore();
     }
 
     private void drawPieAt(int index, Canvas canvas) {
         final float degree = mDegreeArr[index];
-        mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(getResources().getColor(index == mCurrentIndex ? mColorArr[index] : mColorDarkArr[index]));
         mOuterPath.moveTo(canvas.getWidth()/2, canvas.getHeight()/2);
         mOuterPath.arcTo(mRect, 90 - degree/2, degree, false);
