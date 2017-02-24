@@ -1,6 +1,8 @@
 package com.assistne.dribbble.dashboardnavigation;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -18,7 +20,7 @@ import com.assistne.dribbble.R;
 public class PieChartView extends View {
     private static final String TAG = "#PieChartView";
     private float[] mData = new float[] {1};
-    private int[] mDegreeArr = new int[] {360};
+    private float[] mDegreeArr = new float[] {360};
     private float mTotal = 0;
     @ColorRes
     private int[] mColorArr = new int[] {R.color.dn_blue, R.color.dn_green, R.color.dn_red, R.color.dn_yellow, R.color.dn_purple};
@@ -26,11 +28,11 @@ public class PieChartView extends View {
     private int[] mColorDarkArr = new int[] {R.color.dn_blue_dark, R.color.dn_green_dark, R.color.dn_red_dark, R.color.dn_yellow_dark, R.color.dn_purple_dark};
 
     private Paint mPaint;
-    private int mBaseDegree = 0;
-    private int CIRCLE_MARGIN = 10;// 圆心位移
-    private int RADIUS = 200;// 扇形半径
+    private int mCircleMargin;// 小同心圆半径
+    private int mOffset;// 圆心位移
     private int mCurrentIndex = 0;
 
+    private Path mUnderPath;
     private Path mOuterPath;
     private Path mInnerPath;
     private RectF mRect;
@@ -45,10 +47,11 @@ public class PieChartView extends View {
     public PieChartView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mPaint = new Paint();
-        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
         mTotal = total();
+        mUnderPath = new Path();
         mOuterPath = new Path();
         mInnerPath = new Path();
 
@@ -69,15 +72,15 @@ public class PieChartView extends View {
 
     private void calculateDegree() {
         if (mTotal > 0) {
-            mDegreeArr = new int[mData.length];
+            mDegreeArr = new float[mData.length];
             for (int i = 0; i < mData.length; i++) {
-                mDegreeArr[i] = (int) (getFraction(mData[i]) * 360);
+                mDegreeArr[i] = getFraction(mData[i]) * 360;
             }
         }
     }
 
-    private int total() {
-        int total = 0;
+    private float total() {
+        float total = 0;
         if (mData != null && mData.length > 0) {
             for (float i : mData) {
                 if (i > 0) {
@@ -96,6 +99,53 @@ public class PieChartView extends View {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         mRect.set(0, 0, getMeasuredWidth(), getMeasuredHeight());
+        mCircleMargin = getMeasuredWidth()/9;
+        mOffset = getMeasuredWidth()/80;
     }
 
+    @Override
+    protected void onDraw(Canvas canvas) {
+        mUnderPath.reset();
+        mInnerPath.reset();
+        mUnderPath.addCircle(canvas.getWidth()/2, canvas.getHeight()/2, canvas.getWidth()/2, Path.Direction.CW);
+        mInnerPath.addCircle(canvas.getWidth()/2, canvas.getHeight()/2, mCircleMargin, Path.Direction.CW);
+        int sum = 0;
+        for (int i = 0; i < mDegreeArr.length; i++) {
+            canvas.save();
+            if (i > 0) {
+                canvas.rotate(-(sum + mDegreeArr[i]/2), getMeasuredWidth()/2, getMeasuredHeight()/2);
+            }
+            drawPieAt(i, canvas);
+            canvas.restore();
+            if (i == 0) {
+                sum += mDegreeArr[0]/2;
+            } else {
+                sum += mDegreeArr[i];
+            }
+        }
+        canvas.save();
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setColor(Color.RED);
+        canvas.drawCircle(getMeasuredWidth()/2, getMeasuredHeight()/2, getMeasuredWidth()/2, mPaint);
+        canvas.drawCircle(getMeasuredWidth()/2, getMeasuredHeight()/2, mCircleMargin, mPaint);
+        canvas.drawLine(0, getMeasuredHeight()/2, getMeasuredWidth(), getMeasuredHeight()/2, mPaint);
+        canvas.drawLine(getMeasuredWidth()/2, 0, getMeasuredWidth()/2, getMeasuredHeight(), mPaint);
+        canvas.restore();
+    }
+
+    private void drawPieAt(int index, Canvas canvas) {
+        final float degree = mDegreeArr[index];
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setColor(getResources().getColor(index == mCurrentIndex ? mColorArr[index] : mColorDarkArr[index]));
+        mOuterPath.moveTo(canvas.getWidth()/2, canvas.getHeight()/2);
+        mOuterPath.arcTo(mRect, 90 - degree/2, degree, false);
+        mOuterPath.offset(0, (float) (mOffset /Math.sin(degree/360 * Math.PI)));
+        mOuterPath.close();
+        mOuterPath.op(mUnderPath, Path.Op.INTERSECT);
+        mOuterPath.op(mInnerPath, Path.Op.DIFFERENCE);
+        canvas.save();
+        canvas.drawPath(mOuterPath, mPaint);
+        canvas.restore();
+        mOuterPath.reset();
+    }
 }
