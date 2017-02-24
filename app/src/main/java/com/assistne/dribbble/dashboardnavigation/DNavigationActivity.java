@@ -12,6 +12,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class DNavigationActivity extends AppCompatActivity {
+    private static final String TAG = "#DNavigationActivity";
     @BindView(R.id.chart)
     PieChartView mPieChartView;
     @BindView(R.id.viewpager)
@@ -33,6 +34,17 @@ public class DNavigationActivity extends AppCompatActivity {
             @Override
             public int getCount() {
                 return 5;
+            }
+        });
+        mViewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                mPieChartView.rotateChart(positionOffset);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mPieChartView.setCurrentIndex(position);
             }
         });
     }

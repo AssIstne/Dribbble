@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.assistne.dribbble.R;
@@ -29,7 +30,8 @@ public class PieChartView extends View {
     private Paint mPaint;
     private int mCircleMargin;// 小同心圆半径
     private int mOffset;// 圆心位移
-    private int mCurrentIndex = 0;
+    private int mCurrentIndex;
+    private float mRotateDegree;
 
     private Path mUnderPath;
     private Path mOuterPath;
@@ -128,7 +130,8 @@ public class PieChartView extends View {
         final float degree = mDegreeArr[index];
         mPaint.setColor(getResources().getColor(index == mCurrentIndex ? COLOR_ARR[index] : mColorDarkArr[index]));
         mOuterPath.moveTo(canvas.getWidth()/2, canvas.getHeight()/2);
-        mOuterPath.arcTo(mRect, 90 - degree/2, degree, false);
+        float beginDegree = 90 - degree/2 - mRotateDegree;
+        mOuterPath.arcTo(mRect, beginDegree, degree, false);
         mOuterPath.offset(0, (float) (mOffset /Math.sin(degree/360 * Math.PI)));
         mOuterPath.close();
         mOuterPath.op(mUnderPath, Path.Op.INTERSECT);
@@ -137,5 +140,30 @@ public class PieChartView extends View {
         canvas.drawPath(mOuterPath, mPaint);
         canvas.restore();
         mOuterPath.reset();
+    }
+
+    public void setCurrentIndex(int index) {
+        if (mCurrentIndex != index) {
+            mCurrentIndex = index;
+            invalidate();
+        }
+    }
+
+    public void rotateChart(float offset) {
+        if (offset != 0) {
+            final int currentIndex = mCurrentIndex;
+            final int targetIndex;
+            if (offset < 0 && currentIndex != 0) {
+                targetIndex = currentIndex - 1;
+            } else if (offset > 0 && currentIndex != 4) {
+                targetIndex = currentIndex + 1;
+            } else {
+                return;
+            }
+
+            final float degreeRange = mDegreeArr[currentIndex]/2 + mDegreeArr[targetIndex]/2;
+            mRotateDegree = degreeRange * offset;
+            invalidate();
+        }
     }
 }
