@@ -111,6 +111,9 @@ public class PieChartView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        if (getAlpha() == 0) {
+            return;
+        }
         int sum = 0;
         for (int i = 0; i < mDegreeArr.length; i++) {
             canvas.save();
@@ -169,7 +172,9 @@ public class PieChartView extends View {
             final float degreeRange = mDegreeArr[num]/2 + mDegreeArr[num+1]/2;
             // 小数*总度数 + 整数总度数
             mRotateDegree = part + degreeRange * fraction;
-            invalidate();
+            if (isShown() && getAlpha() != 0f) {
+                invalidate();
+            }
         }
     }
 }
