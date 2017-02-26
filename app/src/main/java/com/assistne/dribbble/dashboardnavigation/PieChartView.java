@@ -1,5 +1,6 @@
 package com.assistne.dribbble.dashboardnavigation;
 
+import android.animation.ArgbEvaluator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -21,6 +22,7 @@ public class PieChartView extends View {
     private float[] mData = new float[] {1};
     private float[] mDegreeArr = new float[] {360};
     private float mTotal = 0;
+    public static final ArgbEvaluator ARGB_EVALUATOR = new ArgbEvaluator();
     @ColorRes
     public static final int[] COLOR_ARR = new int[] {R.color.dn_blue, R.color.dn_green, R.color.dn_red, R.color.dn_yellow, R.color.dn_purple};
     @ColorRes
@@ -29,7 +31,7 @@ public class PieChartView extends View {
     private Paint mPaint;
     private int mCircleMargin;// 小同心圆半径
     private int mOffset;// 圆心位移
-    private int mCurrentIndex;
+    private float mRotateOffset;
     private float mRotateDegree;
 
     private Path mUnderPath;
@@ -126,7 +128,7 @@ public class PieChartView extends View {
 
     private void drawPieAt(int index, Canvas canvas) {
         final float degree = mDegreeArr[index];
-        mPaint.setColor(getResources().getColor(index == mCurrentIndex ? COLOR_ARR[index] : mColorDarkArr[index]));
+        mPaint.setColor(getColorAccordingTo(index));
         mOuterPath.moveTo(canvas.getWidth()/2, canvas.getHeight()/2);
         float beginDegree = 90 - degree/2;
         mOuterPath.arcTo(mRect, beginDegree, degree, false);
@@ -140,14 +142,19 @@ public class PieChartView extends View {
         mOuterPath.reset();
     }
 
-    public void setCurrentIndex(int index) {
-        if (mCurrentIndex != index) {
-            mCurrentIndex = index;
-            invalidate();
+    private int getColorAccordingTo(int index) {
+        int num = (int) mRotateOffset;
+        float fraction = mRotateOffset - num;
+        if (index != num && index != num + 1) {
+            return getResources().getColor(mColorDarkArr[index]);
+        } else {
+            return (int) ARGB_EVALUATOR.evaluate(index == num ? fraction : 1 - fraction, getResources().getColor(COLOR_ARR[index]),
+                    getResources().getColor(mColorDarkArr[index]));
         }
     }
 
     public void rotateChart(float offset) {
+        mRotateOffset = offset;
         int num = (int) offset;
         float fraction = offset - num;
         if (num >= 0 && fraction > 0 && num < mData.length - 1) {

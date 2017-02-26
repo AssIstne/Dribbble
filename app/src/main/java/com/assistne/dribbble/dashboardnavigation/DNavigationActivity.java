@@ -1,12 +1,10 @@
 package com.assistne.dribbble.dashboardnavigation;
 
-import android.animation.ArgbEvaluator;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.assistne.dribbble.R;
 
@@ -39,13 +37,12 @@ public class DNavigationActivity extends AppCompatActivity {
                 return 5;
             }
         });
-        final ArgbEvaluator evaluator = new ArgbEvaluator();
         mViewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 mPieChartView.rotateChart(position + positionOffset);
                 if (positionOffset > 0) {
-                    int color = (int) evaluator.evaluate(positionOffset, getResources().getColor(PieChartView.COLOR_ARR[position]), getResources().getColor(PieChartView.COLOR_ARR[position+1]));
+                    int color = (int) PieChartView.ARGB_EVALUATOR.evaluate(positionOffset, getResources().getColor(PieChartView.COLOR_ARR[position]), getResources().getColor(PieChartView.COLOR_ARR[position+1]));
                     mViewPager.setBackgroundColor(color);
                 }
             }
