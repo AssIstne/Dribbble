@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.assistne.dribbble.R;
 
@@ -39,12 +40,19 @@ public class DNavigationActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                mPieChartView.rotateChart(positionOffset);
+                Log.d(TAG, "onPageScrolled: " + position + "  " + positionOffset + "  " + positionOffsetPixels);
+                mPieChartView.rotateChart(position + positionOffset);
             }
 
             @Override
             public void onPageSelected(int position) {
-                mPieChartView.setCurrentIndex(position);
+                Log.d(TAG, "onPageSelected: " + position);
+//                mPieChartView.setCurrentIndex(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                Log.d(TAG, "onPageScrollStateChanged: " + state);
             }
         });
     }

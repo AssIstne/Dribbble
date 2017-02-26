@@ -8,7 +8,6 @@ import android.graphics.RectF;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import com.assistne.dribbble.R;
@@ -102,20 +101,19 @@ public class PieChartView extends View {
         mRect.set(0, 0, getMeasuredWidth(), getMeasuredHeight());
         mCircleMargin = getMeasuredWidth()/9;
         mOffset = getMeasuredWidth()/80;
+        mUnderPath.reset();
+        mInnerPath.reset();
+        mUnderPath.addCircle(getWidth()/2, getHeight()/2, getWidth()/2, Path.Direction.CW);
+        mInnerPath.addCircle(getWidth()/2, getHeight()/2, mCircleMargin, Path.Direction.CW);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        mUnderPath.reset();
-        mInnerPath.reset();
-        mUnderPath.addCircle(canvas.getWidth()/2, canvas.getHeight()/2, canvas.getWidth()/2, Path.Direction.CW);
-        mInnerPath.addCircle(canvas.getWidth()/2, canvas.getHeight()/2, mCircleMargin, Path.Direction.CW);
         int sum = 0;
         for (int i = 0; i < mDegreeArr.length; i++) {
             canvas.save();
-            if (i > 0) {
-                canvas.rotate(-(sum + mDegreeArr[i]/2), getMeasuredWidth()/2, getMeasuredHeight()/2);
-            }
+            float partRotate = i > 0 ? -(sum + mDegreeArr[i]/2) : 0;
+            canvas.rotate(partRotate + mRotateDegree, getMeasuredWidth()/2, getMeasuredHeight()/2);
             drawPieAt(i, canvas);
             canvas.restore();
             if (i == 0) {
@@ -130,7 +128,7 @@ public class PieChartView extends View {
         final float degree = mDegreeArr[index];
         mPaint.setColor(getResources().getColor(index == mCurrentIndex ? COLOR_ARR[index] : mColorDarkArr[index]));
         mOuterPath.moveTo(canvas.getWidth()/2, canvas.getHeight()/2);
-        float beginDegree = 90 - degree/2 - mRotateDegree;
+        float beginDegree = 90 - degree/2;
         mOuterPath.arcTo(mRect, beginDegree, degree, false);
         mOuterPath.offset(0, (float) (mOffset /Math.sin(degree/360 * Math.PI)));
         mOuterPath.close();
@@ -150,19 +148,20 @@ public class PieChartView extends View {
     }
 
     public void rotateChart(float offset) {
-        if (offset != 0) {
-            final int currentIndex = mCurrentIndex;
-            final int targetIndex;
-            if (offset < 0 && currentIndex != 0) {
-                targetIndex = currentIndex - 1;
-            } else if (offset > 0 && currentIndex != 4) {
-                targetIndex = currentIndex + 1;
-            } else {
-                return;
+        int num = (int) offset;
+        float fraction = offset - num;
+        if (num >= 0 && fraction > 0 && num < mData.length - 1) {
+            float part = 0;// 整数部分对应的度数
+            if (num > 0) {
+                part += (mDegreeArr[0]/2 + mDegreeArr[num]/2);// 头尾总是只有一半
+                for (int i = 1; i < num; i++) {// 中间部分包含全部
+                    part += mDegreeArr[i];
+                }
             }
-
-            final float degreeRange = mDegreeArr[currentIndex]/2 + mDegreeArr[targetIndex]/2;
-            mRotateDegree = degreeRange * offset;
+            // 小数部分对应的度数总数
+            final float degreeRange = mDegreeArr[num]/2 + mDegreeArr[num+1]/2;
+            // 小数*总度数 + 整数总度数
+            mRotateDegree = part + degreeRange * fraction;
             invalidate();
         }
     }
