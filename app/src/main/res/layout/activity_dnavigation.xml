@@ -16,7 +16,7 @@
         >
         <com.assistne.dribbble.dashboardnavigation.CollapsingLayout
             android:layout_width="match_parent"
-            android:layout_height="320dp"
+            android:layout_height="wrap_content"
             app:layout_scrollFlags="snap|scroll|exitUntilCollapsed"
             android:fitsSystemWindows="true"
             android:background="@color/dn_bg"
@@ -53,7 +53,15 @@
                 android:id="@+id/chart"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
-                android:layout_centerInParent="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="95dp"
+                />
+            <com.assistne.dribbble.dashboardnavigation.IndicatorView
+                android:layout_width="match_parent"
+                android:layout_below="@id/chart"
+                android:layout_height="20dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginBottom="40dp"
                 />
         </com.assistne.dribbble.dashboardnavigation.CollapsingLayout>
     </android.support.design.widget.AppBarLayout>

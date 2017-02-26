@@ -26,7 +26,7 @@ public class PieChartView extends View {
     @ColorRes
     public static final int[] COLOR_ARR = new int[] {R.color.dn_blue, R.color.dn_green, R.color.dn_red, R.color.dn_yellow, R.color.dn_purple};
     @ColorRes
-    private static final int[] mColorDarkArr = new int[] {R.color.dn_blue_dark, R.color.dn_green_dark, R.color.dn_red_dark, R.color.dn_yellow_dark, R.color.dn_purple_dark};
+    public static final int[] COLOR_DARK_ARR = new int[] {R.color.dn_blue_dark, R.color.dn_green_dark, R.color.dn_red_dark, R.color.dn_yellow_dark, R.color.dn_purple_dark};
 
     private Paint mPaint;
     private int mCircleMargin;// 小同心圆半径
@@ -149,10 +149,10 @@ public class PieChartView extends View {
         int num = (int) mRotateOffset;
         float fraction = mRotateOffset - num;
         if (index != num && index != num + 1) {
-            return getResources().getColor(mColorDarkArr[index]);
+            return getResources().getColor(COLOR_DARK_ARR[index]);
         } else {
             return (int) ARGB_EVALUATOR.evaluate(index == num ? fraction : 1 - fraction, getResources().getColor(COLOR_ARR[index]),
-                    getResources().getColor(mColorDarkArr[index]));
+                    getResources().getColor(COLOR_DARK_ARR[index]));
         }
     }
 
