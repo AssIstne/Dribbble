@@ -12,11 +12,13 @@ import android.view.View;
  */
 
 public class IndicatorView extends View {
+    private static final String TAG = "#IndicatorView";
     private Paint mPaint;
     private float mOffset;
     private int mOffsetPixel;
     private RectF mRectF;
     private float mScale = 1f;
+    private boolean mThumbMode;
 
     public IndicatorView(Context context) {
         this(context, null);
@@ -38,9 +40,11 @@ public class IndicatorView extends View {
         super.onDraw(canvas);
         canvas.save();
         canvas.scale(mScale, mScale, getMeasuredWidth()/2, getMeasuredHeight()/2);
-        drawHeadOrTail(canvas);
-        drawFirst(canvas);
+        if (!mThumbMode) {
+            drawHeadOrTail(canvas);
+        }
         drawSecond(canvas);
+        drawFirst(canvas);
         canvas.restore();
     }
 
@@ -68,6 +72,10 @@ public class IndicatorView extends View {
         final float height = getMeasuredHeight();
         final float top = 0;
         mPaint.setColor(getFirstColor());
+        if (mThumbMode && mOffsetPixel >= 0.75f * width) {
+            int alpha = (int) Math.max(0, 255 * (1 - (mOffsetPixel - 0.75f * width)/(0.48f * width)));
+            mPaint.setAlpha(alpha);
+        }
         mRectF.set(0.75f * width, top, 0.75f * width + width, height);
         mRectF.offset(-mOffsetPixel, 0);
         float fraction = ((1 - (mOffset - (int) mOffset)) * 0.15f + 0.85f);
@@ -82,6 +90,10 @@ public class IndicatorView extends View {
         final float height = getMeasuredHeight();
         final float top = 0;
         mPaint.setColor(getSecondColor());
+        if (mThumbMode && mOffsetPixel <= 0.5f * width) {
+            int alpha = (int) Math.max(0, 255 * (mOffsetPixel / (0.5f * width)));
+            mPaint.setAlpha(alpha);
+        }
         mRectF.set(getMeasuredWidth() - 0.5f * width, top, getMeasuredWidth() + 0.5f * width, height);
         mRectF.offset(-mOffsetPixel, 0);
         float fraction = (mOffset - (int) mOffset) * 0.15f + 0.85f;
@@ -142,5 +154,12 @@ public class IndicatorView extends View {
 
     public int getCurrentColor() {
         return getFirstColor();
+    }
+
+    public void setThumbMode(boolean thumbMode) {
+        if (mThumbMode != thumbMode) {
+            mThumbMode = thumbMode;
+            invalidate();
+        }
     }
 }
