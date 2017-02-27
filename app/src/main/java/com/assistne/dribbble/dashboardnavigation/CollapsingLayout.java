@@ -29,6 +29,7 @@ public class CollapsingLayout extends RelativeLayout {
     private boolean mHasCover;
     private float mTranslateY;
     private float mLine;
+    private int mLastOffset;
 
     public CollapsingLayout(Context context) {
         this(context, null);
@@ -133,45 +134,61 @@ public class CollapsingLayout extends RelativeLayout {
                 } else {
                     offset = Math.round(-verticalOffset * 0.5f);
                 }
-                offsetHelper.setTopAndBottomOffset(offset);
-                float fraction = Math.abs((float) verticalOffset/mLine);
-                fraction = Math.min(fraction, 1f);
-                if (child instanceof PieChartView) {
-                    child.setAlpha(1- fraction);
-                    float scale = (1 - fraction) * 0.7f + 0.3f;
-                    child.setScaleX(scale);
-                    child.setScaleY(scale);
-                }
-                boolean oldCover= mHasCover;
-                mHasCover = fraction > 0.05f;
-                if (child instanceof IndicatorView && verticalOffset != 0) {
-                    child.setAlpha(1- fraction);
-                    float scaleIndicator = 1 - fraction * 0.5f;
-                    mCoverScale = scaleIndicator;
-                    ((IndicatorView) child).setScale(scaleIndicator);
-                    mPaint.setColor(((IndicatorView) child).getCurrentColor());
-                    mCoverRectF = ((IndicatorView) child).getCurrentIndicatorRect();
-                    mCoverRectF.offset(0, child.getTop());
-                    if (Math.abs(verticalOffset) >= mLine) {
-                        float tFraction = (Math.abs(verticalOffset) - mLine) / (getHeight()-getMinimumHeight()-mLine);
-                        mTranslateY = getResources().getDimensionPixelSize(R.dimen.dn_total_translate) * tFraction;
+                if (mLastOffset != verticalOffset) {
+                    float fraction = Math.abs((float) verticalOffset/mLine);
+                    fraction = Math.min(fraction, 1f);
+                    if (child instanceof PieChartView) {
+                        child.setAlpha(1- fraction);
+                        float scale = (1 - fraction) * 0.7f + 0.3f;
+                        child.setScaleX(scale);
+                        child.setScaleY(scale);
                     }
-                }
-                if (mHasCover || oldCover != mHasCover) {
-                    invalidate(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
-                }
+                    boolean oldCover= mHasCover;
+                    mHasCover = fraction > 0.05f;
+                    if (child instanceof IndicatorView) {
+                        child.setAlpha(1- fraction);
+                        float scaleIndicator = 1 - fraction * 0.5f;
+                        mCoverScale = scaleIndicator;
+                        ((IndicatorView) child).setScale(scaleIndicator);
+                        mPaint.setColor(((IndicatorView) child).getCurrentColor());
+                        // 覆盖物的所在的矩形位置
+                        if (mCoverRectF == null) {
+                            mCoverRectF = ((IndicatorView) child).getCurrentIndicatorRect();
+                            mCoverRectF.offset(0, child.getTop());
+                        }
+                        // 计算覆盖物的位移
+                        if (Math.abs(verticalOffset) >= mLine) {
+                            float tFraction = (Math.abs(verticalOffset) - mLine) / (getHeight()-getMinimumHeight()-mLine);
+                            mTranslateY = getResources().getDimensionPixelSize(R.dimen.dn_total_translate) * tFraction;
+                        }
+                        if (Math.abs(verticalOffset) == (getHeight() - getMinimumHeight())) {
+                            ((IndicatorView) child).setThumbMode(true);
+                            child.setTranslationY(mTranslateY);
+                            mHasCover = false;
+                            child.setAlpha(1);
+                        } else {
+                            ((IndicatorView) child).setThumbMode(false);
+                            child.setTranslationY(0);
+                        }
+                    }
+                    if (mHasCover || oldCover != mHasCover) {
+                        invalidate(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+                    }
 
-                if (child.getId() == R.id.title) {
-                    float tFraction = (Math.abs(verticalOffset) - mLine) / (getHeight()-getMinimumHeight()-mLine);
-                    if (Math.abs(verticalOffset) >= mLine) {
-                        child.setScaleY(1- 0.5f * tFraction);
-                        child.setScaleX(1 - tFraction * 0.27f);
-                    }
-                    if (tFraction > 0.5f) {
-                        child.setAlpha(2 - 2 * tFraction);
+                    if (child.getId() == R.id.title) {
+                        float tFraction = (Math.abs(verticalOffset) - mLine) / (getHeight()-getMinimumHeight()-mLine);
+                        if (Math.abs(verticalOffset) >= mLine) {
+                            child.setScaleY(1- 0.5f * tFraction);
+                            child.setScaleX(1 - tFraction * 0.27f);
+                        }
+                        if (tFraction > 0.5f) {
+                            child.setAlpha(2 - 2 * tFraction);
+                        }
                     }
                 }
+                offsetHelper.setTopAndBottomOffset(offset);
             }
+            mLastOffset = verticalOffset;
         }
     }
 
