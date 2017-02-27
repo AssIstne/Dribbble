@@ -16,6 +16,7 @@ public class IndicatorView extends View {
     private float mOffset;
     private int mOffsetPixel;
     private RectF mRectF;
+    private float mScale = 1f;
 
     public IndicatorView(Context context) {
         this(context, null);
@@ -35,9 +36,12 @@ public class IndicatorView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        canvas.save();
+        canvas.scale(mScale, mScale, getMeasuredWidth()/2, getMeasuredHeight()/2);
         drawHeadOrTail(canvas);
         drawFirst(canvas);
         drawSecond(canvas);
+        canvas.restore();
     }
 
     private void drawHeadOrTail(Canvas canvas) {
@@ -122,5 +126,21 @@ public class IndicatorView extends View {
             mOffsetPixel = (int) (getMeasuredWidth() * fraction / 2);
             invalidate();
         }
+    }
+
+    public void setScale(float scale) {
+        if (scale != mScale) {
+            mScale = scale;
+            invalidate();
+        }
+    }
+
+    public RectF getCurrentIndicatorRect() {
+        final float width = getMeasuredWidth() * 2 / 5;
+        return new RectF(0.75f * width, 0, 0.75f * width + width, getMeasuredHeight());
+    }
+
+    public int getCurrentColor() {
+        return getFirstColor();
     }
 }
