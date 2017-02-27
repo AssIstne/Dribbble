@@ -118,6 +118,14 @@ public class CollapsingLayout extends RelativeLayout {
                     offset = Math.round(-verticalOffset * 0.5f);
                 }
                 offsetHelper.setTopAndBottomOffset(offset);
+                if (child instanceof PieChartView) {
+                    float fraction = Math.abs((float) verticalOffset/((getHeight() - getMinimumHeight())*0.8f));
+                    fraction = Math.min(fraction, 1f);
+                    child.setAlpha(1- fraction);
+                    float scale = (1 - fraction) * 0.7f + 0.3f;
+                    child.setScaleX(scale);
+                    child.setScaleY(scale);
+                }
             }
         }
     }
