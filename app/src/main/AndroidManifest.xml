@@ -8,30 +8,29 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
-            >
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name=".framestday004.FStD4Activity"/>
-        <activity
-            android:name=".AnimationActivity"/>
-        <activity
-            android:name=".emailreceipt.EmailReceiptActivity"/>
-        <activity
-            android:name=".yahooweather.YahooWeatherActivity"/>
+        <activity android:name=".framestday004.FStD4Activity"/>
+        <activity android:name=".AnimationActivity"/>
+        <activity android:name=".emailreceipt.EmailReceiptActivity"/>
+        <activity android:name=".yahooweather.YahooWeatherActivity"/>
         <activity
             android:name=".bezierindicator.BezierActivity"
             android:screenOrientation="landscape"/>
         <activity
             android:name=".downloadanim.DownloadActivity"
             android:screenOrientation="landscape"/>
-        <activity android:name=".dashboardnavigation.DNavigationActivity"
+        <activity
+            android:name=".dashboardnavigation.DNavigationActivity"
             android:theme="@style/DNavigationTheme">
+        </activity>
+        <activity android:name=".dashboardnavigation.DNMainActivity"
+                  android:theme="@style/DNavigationTheme">
         </activity>
     </application>
 

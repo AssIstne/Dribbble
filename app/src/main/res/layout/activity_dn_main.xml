@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_dn_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dn_bg"
+    tools:context="com.assistne.dribbble.dashboardnavigation.DNMainActivity">
+    <View
+        android:id="@+id/title"
+        android:layout_width="100dp"
+        android:layout_height="20dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/dn_title"
+        android:layout_marginTop="17dp"
+        android:tag="pin"
+        />
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/dn_back"
+        android:layout_marginTop="7dp"
+        android:layout_marginLeft="7dp"
+        />
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="5dp"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/dn_menu"
+        android:layout_marginTop="7dp"
+        android:layout_marginRight="7dp"
+        />
+    <com.assistne.dribbble.dashboardnavigation.PieChartView
+        android:id="@+id/chart"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="85dp"
+        />
+</RelativeLayout>
