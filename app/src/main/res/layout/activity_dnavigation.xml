@@ -57,6 +57,7 @@
                 android:layout_marginTop="95dp"
                 />
             <com.assistne.dribbble.dashboardnavigation.IndicatorView
+                android:id="@+id/indicator"
                 android:layout_width="match_parent"
                 android:layout_below="@id/chart"
                 android:layout_height="20dp"

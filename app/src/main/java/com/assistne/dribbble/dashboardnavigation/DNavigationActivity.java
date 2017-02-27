@@ -17,6 +17,8 @@ public class DNavigationActivity extends AppCompatActivity {
     PieChartView mPieChartView;
     @BindView(R.id.viewpager)
     ViewPager mViewPager;
+    @BindView(R.id.indicator)
+    IndicatorView mIndicatorView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class DNavigationActivity extends AppCompatActivity {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 mPieChartView.rotateChart(position + positionOffset);
+                mIndicatorView.setOffset(position + positionOffset);
                 if (positionOffset > 0) {
                     int color = (int) PieChartView.ARGB_EVALUATOR.evaluate(positionOffset, getResources().getColor(PieChartView.COLOR_ARR[position]), getResources().getColor(PieChartView.COLOR_ARR[position+1]));
                     mViewPager.setBackgroundColor(color);
