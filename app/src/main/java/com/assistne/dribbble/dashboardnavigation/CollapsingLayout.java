@@ -1,6 +1,10 @@
 package com.assistne.dribbble.dashboardnavigation;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.WindowInsetsCompat;
@@ -8,6 +12,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewParent;
 import android.widget.RelativeLayout;
+
+import com.assistne.dribbble.R;
 
 /**
  * Created by assistne on 17/2/22.
@@ -17,6 +23,13 @@ public class CollapsingLayout extends RelativeLayout {
     private static final String TAG = "#CollapsingLayout";
     private WindowInsetsCompat mLastInsets;
     private AppBarLayout.OnOffsetChangedListener mOnOffsetChangedListener;
+    private Paint mPaint;
+    private RectF mCoverRectF;
+    private float mCoverScale;
+    private boolean mHasCover;
+    private float mTranslateY;
+    private float mLine;
+
     public CollapsingLayout(Context context) {
         this(context, null);
     }
@@ -35,6 +48,9 @@ public class CollapsingLayout extends RelativeLayout {
                         return onWindowInsetChanged(insets);
                     }
                 });
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setColor(Color.GRAY);
     }
 
     private WindowInsetsCompat onWindowInsetChanged(final WindowInsetsCompat insets) {
@@ -50,7 +66,6 @@ public class CollapsingLayout extends RelativeLayout {
             mLastInsets = newInsets;
             requestLayout();
         }
-
         return insets;
     }
 
@@ -103,6 +118,7 @@ public class CollapsingLayout extends RelativeLayout {
 
             getViewOffsetHelper(child).onViewLayout();
         }
+        mLine = (getHeight() - getMinimumHeight())*0.6f;
     }
 
     private class OffsetUpdateListener implements AppBarLayout.OnOffsetChangedListener {
@@ -118,13 +134,42 @@ public class CollapsingLayout extends RelativeLayout {
                     offset = Math.round(-verticalOffset * 0.5f);
                 }
                 offsetHelper.setTopAndBottomOffset(offset);
+                float fraction = Math.abs((float) verticalOffset/mLine);
+                fraction = Math.min(fraction, 1f);
                 if (child instanceof PieChartView) {
-                    float fraction = Math.abs((float) verticalOffset/((getHeight() - getMinimumHeight())*0.6f));
-                    fraction = Math.min(fraction, 1f);
                     child.setAlpha(1- fraction);
                     float scale = (1 - fraction) * 0.7f + 0.3f;
                     child.setScaleX(scale);
                     child.setScaleY(scale);
+                }
+                boolean oldCover= mHasCover;
+                mHasCover = fraction > 0.05f;
+                if (child instanceof IndicatorView && verticalOffset != 0) {
+                    child.setAlpha(1- fraction);
+                    float scaleIndicator = 1 - fraction * 0.5f;
+                    mCoverScale = scaleIndicator;
+                    ((IndicatorView) child).setScale(scaleIndicator);
+                    mPaint.setColor(((IndicatorView) child).getCurrentColor());
+                    mCoverRectF = ((IndicatorView) child).getCurrentIndicatorRect();
+                    mCoverRectF.offset(0, child.getTop());
+                    if (Math.abs(verticalOffset) >= mLine) {
+                        float tFraction = (Math.abs(verticalOffset) - mLine) / (getHeight()-getMinimumHeight()-mLine);
+                        mTranslateY = getResources().getDimensionPixelSize(R.dimen.dn_total_translate) * tFraction;
+                    }
+                }
+                if (mHasCover || oldCover != mHasCover) {
+                    invalidate(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+                }
+
+                if (child.getId() == R.id.title) {
+                    float tFraction = (Math.abs(verticalOffset) - mLine) / (getHeight()-getMinimumHeight()-mLine);
+                    if (Math.abs(verticalOffset) >= mLine) {
+                        child.setScaleY(1- 0.5f * tFraction);
+                        child.setScaleX(1 - tFraction * 0.27f);
+                    }
+                    if (tFraction > 0.5f) {
+                        child.setAlpha(2 - 2 * tFraction);
+                    }
                 }
             }
         }
@@ -151,5 +196,17 @@ public class CollapsingLayout extends RelativeLayout {
 
     static int constrain(int amount, int low, int high) {
         return amount < low ? low : (amount > high ? high : amount);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (mHasCover && mCoverRectF != null) {
+            canvas.save();
+            canvas.translate(0, mTranslateY);
+            canvas.scale(mCoverScale, mCoverScale, mCoverRectF.centerX(), mCoverRectF.centerY());
+            canvas.drawRoundRect(mCoverRectF, mCoverRectF.width(), mCoverRectF.width(), mPaint);
+            canvas.restore();
+        }
     }
 }

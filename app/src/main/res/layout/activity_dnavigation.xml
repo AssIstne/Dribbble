@@ -24,6 +24,7 @@
             android:elevation="4dp"
             >
             <View
+                android:id="@+id/title"
                 android:layout_width="100dp"
                 android:layout_height="20dp"
                 android:layout_centerHorizontal="true"
@@ -63,6 +64,7 @@
                 android:layout_height="20dp"
                 android:layout_marginTop="40dp"
                 android:layout_marginBottom="40dp"
+                android:tag="pin"
                 />
         </com.assistne.dribbble.dashboardnavigation.CollapsingLayout>
     </android.support.design.widget.AppBarLayout>
