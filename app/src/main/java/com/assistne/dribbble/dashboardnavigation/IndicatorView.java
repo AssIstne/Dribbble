@@ -44,17 +44,19 @@ public class IndicatorView extends View {
         final float width = getMeasuredWidth() * 2 / 5;
         final float height = getMeasuredHeight();
         final float top = 0;
+        canvas.save();
         if (mOffsetPixel < 0.5f * width) {
             mPaint.setColor(getHeadColor());
-            mRectF.set(-width/2, top, width/2, height);
+            mRectF.set(-width / 2, top, width / 2, height);
             mRectF.offset(-mOffsetPixel, 0);
-            canvas.drawRoundRect(mRectF, width/2, width/2, mPaint);
-        } else if (mOffsetPixel > 0.75f * width){
+        } else if (mOffsetPixel > 0.75f * width) {
             mPaint.setColor(getTailColor());
-            mRectF.set(getMeasuredWidth()+0.75f*width, top, getMeasuredWidth()+0.75f*width+width, height);
+            mRectF.set(getMeasuredWidth() + 0.75f * width, top, getMeasuredWidth() + 0.75f * width + width, height);
             mRectF.offset(-mOffsetPixel, 0);
-            canvas.drawRoundRect(mRectF, width/2, width/2, mPaint);
         }
+        canvas.scale(0.85f, 0.85f, (mRectF.left + mRectF.right) / 2, getMeasuredHeight() / 2);
+        canvas.drawRoundRect(mRectF, width / 2, width / 2, mPaint);
+        canvas.restore();
     }
 
     private void drawFirst(Canvas canvas) {
@@ -62,9 +64,13 @@ public class IndicatorView extends View {
         final float height = getMeasuredHeight();
         final float top = 0;
         mPaint.setColor(getFirstColor());
-        mRectF.set(0.75f*width, top, 0.75f*width+width, height);
+        mRectF.set(0.75f * width, top, 0.75f * width + width, height);
         mRectF.offset(-mOffsetPixel, 0);
-        canvas.drawRoundRect(mRectF, width/2, width/2, mPaint);
+        float fraction = ((1 - (mOffset - (int) mOffset)) * 0.15f + 0.85f);
+        canvas.save();
+        canvas.scale(fraction, fraction, (mRectF.left + mRectF.right) / 2, getMeasuredHeight() / 2);
+        canvas.drawRoundRect(mRectF, width / 2, width / 2, mPaint);
+        canvas.restore();
     }
 
     private void drawSecond(Canvas canvas) {
@@ -72,19 +78,23 @@ public class IndicatorView extends View {
         final float height = getMeasuredHeight();
         final float top = 0;
         mPaint.setColor(getSecondColor());
-        mRectF.set(getMeasuredWidth()-0.5f*width, top, getMeasuredWidth()+0.5f*width, height);
+        mRectF.set(getMeasuredWidth() - 0.5f * width, top, getMeasuredWidth() + 0.5f * width, height);
         mRectF.offset(-mOffsetPixel, 0);
-        canvas.drawRoundRect(mRectF, width/2, width/2, mPaint);
+        float fraction = (mOffset - (int) mOffset) * 0.15f + 0.85f;
+        canvas.save();
+        canvas.scale(fraction, fraction, (mRectF.left + mRectF.right) / 2, getMeasuredHeight() / 2);
+        canvas.drawRoundRect(mRectF, width / 2, width / 2, mPaint);
+        canvas.restore();
     }
 
     private int getHeadColor() {
         int currentIndex = (int) mOffset;
-        return getResources().getColor(PieChartView.COLOR_DARK_ARR[currentIndex-1<0?PieChartView.COLOR_DARK_ARR.length:currentIndex-1]);
+        return getResources().getColor(PieChartView.COLOR_DARK_ARR[currentIndex - 1 < 0 ? PieChartView.COLOR_DARK_ARR.length - 1 : currentIndex - 1]);
     }
 
     private int getTailColor() {
         int currentIndex = (int) mOffset;
-        return getResources().getColor(PieChartView.COLOR_DARK_ARR[currentIndex+2<PieChartView.COLOR_DARK_ARR.length?currentIndex+2:0]);
+        return getResources().getColor(PieChartView.COLOR_DARK_ARR[currentIndex + 2 < PieChartView.COLOR_DARK_ARR.length ? currentIndex + 2 : 0]);
     }
 
     private int getFirstColor() {
