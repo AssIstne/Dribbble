@@ -178,11 +178,21 @@ public class CollapsingLayout extends RelativeLayout {
                     if (child.getId() == R.id.title) {
                         float tFraction = (Math.abs(verticalOffset) - mLine) / (getHeight()-getMinimumHeight()-mLine);
                         if (Math.abs(verticalOffset) >= mLine) {
+                            child.setPivotY(0);
                             child.setScaleY(1- 0.5f * tFraction);
                             child.setScaleX(1 - tFraction * 0.27f);
                         }
                         if (tFraction > 0.5f) {
                             child.setAlpha(2 - 2 * tFraction);
+                        }
+                    }
+
+                    if (child instanceof DotIndicatorView) {
+                        if (Math.abs(verticalOffset) == (getHeight() - getMinimumHeight())) {
+                            child.setAlpha(1);
+                        } else {
+                            child.setAlpha(0);
+                            ((DotIndicatorView) child).updatePivot();
                         }
                     }
                 }

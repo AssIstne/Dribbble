@@ -5,5 +5,5 @@
 
     <dimen name="fst_day4_envelope_translationY">270dp</dimen>
     <dimen name="fst_day4_envelope_msg_translationY">50dp</dimen>
-    <dimen name="dn_total_translate">22dp</dimen>
+    <dimen name="dn_total_translate">17dp</dimen>
 </resources>
