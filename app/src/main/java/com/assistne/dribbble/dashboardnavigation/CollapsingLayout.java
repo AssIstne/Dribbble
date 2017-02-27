@@ -119,7 +119,7 @@ public class CollapsingLayout extends RelativeLayout {
                 }
                 offsetHelper.setTopAndBottomOffset(offset);
                 if (child instanceof PieChartView) {
-                    float fraction = Math.abs((float) verticalOffset/((getHeight() - getMinimumHeight())*0.8f));
+                    float fraction = Math.abs((float) verticalOffset/((getHeight() - getMinimumHeight())*0.6f));
                     fraction = Math.min(fraction, 1f);
                     child.setAlpha(1- fraction);
                     float scale = (1 - fraction) * 0.7f + 0.3f;
