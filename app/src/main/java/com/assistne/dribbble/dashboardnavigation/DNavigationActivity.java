@@ -19,6 +19,8 @@ public class DNavigationActivity extends AppCompatActivity {
     ViewPager mViewPager;
     @BindView(R.id.indicator)
     IndicatorView mIndicatorView;
+    @BindView(R.id.dot_indicator)
+    DotIndicatorView mDotIndicatorView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +29,7 @@ public class DNavigationActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         mPieChartView.setData(new float[]{5, 4.5f, 2, 4, 7});
+        mDotIndicatorView.setSize(5);
         mViewPager.setBackgroundColor(getResources().getColor(PieChartView.COLOR_ARR[0]));
         mViewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
@@ -44,10 +47,16 @@ public class DNavigationActivity extends AppCompatActivity {
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 mPieChartView.rotateChart(position + positionOffset);
                 mIndicatorView.setOffset(position + positionOffset);
+                mDotIndicatorView.setOffset(position + positionOffset);
                 if (positionOffset > 0) {
                     int color = (int) PieChartView.ARGB_EVALUATOR.evaluate(positionOffset, getResources().getColor(PieChartView.COLOR_ARR[position]), getResources().getColor(PieChartView.COLOR_ARR[position+1]));
                     mViewPager.setBackgroundColor(color);
                 }
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mDotIndicatorView.setPivot(position);
             }
         });
     }

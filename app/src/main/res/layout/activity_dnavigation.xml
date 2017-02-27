@@ -32,6 +32,15 @@
                 android:layout_marginTop="17dp"
                 android:tag="pin"
                 />
+
+            <com.assistne.dribbble.dashboardnavigation.DotIndicatorView
+                android:id="@+id/dot_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/title"
+                android:tag="pin"
+                />
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
