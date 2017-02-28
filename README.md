@@ -23,3 +23,8 @@ This project makes designs in [Dribbble.com](https://dribbble.com/) to come true
 ### [Download animation](https://dribbble.com/shots/2939772--Daily-gif-Download)
 <img src="https://d13yacurqjgara.cloudfront.net/users/885937/screenshots/2939772/__-1_1.gif" align="top" width="400">
 <img src="https://github.com/AssIstne/Dribbble/blob/master/snapshot/downloadAnim.gif" width="400">
+
+### [Dashboard Navigation](https://dribbble.com/shots/3266096--16-Dashboard-Navigation)
+Part of it.
+<img src="https://d13yacurqjgara.cloudfront.net/users/467044/screenshots/3266096/newewrst-dash.gif" align="top" width="400">
+<img src="https://github.com/AssIstne/Dribbble/blob/master/snapshot/dash_navigation.gif" width="400">
