@@ -53,4 +53,10 @@
         android:text="Dashboard Navigation"
         android:onClick="goDashboardNavigation"
         />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stepper"
+        android:onClick="goStepper"
+        />
 </LinearLayout>

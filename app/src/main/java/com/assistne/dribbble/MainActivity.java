@@ -10,6 +10,7 @@ import com.assistne.dribbble.dashboardnavigation.DNavigationActivity;
 import com.assistne.dribbble.downloadanim.DownloadActivity;
 import com.assistne.dribbble.emailreceipt.EmailReceiptActivity;
 import com.assistne.dribbble.framestday004.FStD4Activity;
+import com.assistne.dribbble.stepper.StepperActivity;
 import com.assistne.dribbble.yahooweather.YahooWeatherActivity;
 
 public class MainActivity extends Activity {
@@ -46,5 +47,9 @@ public class MainActivity extends Activity {
 
     public void goDashboardNavigation(View view) {
         startActivity(new Intent(this, DNavigationActivity.class));
+    }
+
+    public void goStepper(View view) {
+        startActivity(new Intent(this, StepperActivity.class));
     }
 }
