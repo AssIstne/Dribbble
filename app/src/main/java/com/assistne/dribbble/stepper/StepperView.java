@@ -1,5 +1,6 @@
 package com.assistne.dribbble.stepper;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,6 +11,7 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -17,7 +19,7 @@ import android.view.View;
  */
 
 public class StepperView extends View {
-
+    private static final String TAG = "#StepperView";
     private static final int BG_COLOR = Color.argb(51, 255, 255, 255);
     private static final int CIRCLE_COLOR = Color.WHITE;
     private static final int MARK_COLOR = Color.WHITE;
@@ -32,6 +34,11 @@ public class StepperView extends View {
     private int mNumber;
     private float mMinusScale = 1f;
     private float mPlusScale = 1f;
+    private float mLastX;
+    private boolean mPlusScaling;
+    private ValueAnimator mPlusRunningAnimator;
+    private boolean mMinusScaling;
+    private ValueAnimator mMinusRunningAnimator;
 
     public StepperView(Context context) {
         this(context, null);
@@ -54,6 +61,117 @@ public class StepperView extends View {
         mCirclePaint.setShadowLayer(24, 0, 0, CIRCLE_SHADOW_COLOR);
         // 为了绘制阴影
         setLayerType(LAYER_TYPE_SOFTWARE, mCirclePaint);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mLastX = event.getX();
+                if (isInCircle(event)) {
+                    return true;
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                final int threshold = getMeasuredHeight() / 6;
+                final int middle = getMeasuredWidth() / 2;
+                mCircleCenterX += (event.getX() - mLastX);
+                mLastX = event.getX();
+                invalidate();
+                int delta = (int) (event.getX() - middle);
+                if (delta >= 0) {// 在右侧
+                    if (event.getX() - middle > threshold) {
+                        scalePlusMark();
+                    } else {
+                        restorePlusMark();
+                    }
+                } else {
+                    if (-delta > threshold) {
+                        scaleMinusMark();
+                    } else {
+                        restoreMinusMark();
+                    }
+                }
+                break;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private void scalePlusMark() {
+        if (!mPlusScaling) {
+            if (mPlusRunningAnimator != null && mPlusRunningAnimator.isRunning()) {
+                mPlusRunningAnimator.cancel();
+            }
+            mPlusRunningAnimator = ValueAnimator.ofFloat(mPlusScale, 1.2f);
+            mPlusRunningAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mPlusScale = (float) animation.getAnimatedValue();
+                    invalidate();
+                }
+            });
+            mPlusRunningAnimator.start();
+            mPlusScaling = true;
+        }
+    }
+
+    private void restorePlusMark() {
+        if (mPlusScaling) {
+            if (mPlusRunningAnimator != null && mPlusRunningAnimator.isRunning()) {
+                mPlusRunningAnimator.cancel();
+            }
+            mPlusRunningAnimator = ValueAnimator.ofFloat(mPlusScale, 1f);
+            mPlusRunningAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mPlusScale = (float) animation.getAnimatedValue();
+                    invalidate();
+                }
+            });
+            mPlusRunningAnimator.start();
+            mPlusScaling = false;
+        }
+    }
+
+    private void scaleMinusMark() {
+        if (!mMinusScaling) {
+            if (mMinusRunningAnimator != null && mMinusRunningAnimator.isRunning()) {
+                mMinusRunningAnimator.cancel();
+            }
+            mMinusRunningAnimator = ValueAnimator.ofFloat(mMinusScale, 1.2f);
+            mMinusRunningAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mMinusScale = (float) animation.getAnimatedValue();
+                    invalidate();
+                }
+            });
+            mMinusRunningAnimator.start();
+            mMinusScaling = true;
+        }
+    }
+
+    private void restoreMinusMark() {
+        if (mMinusScaling) {
+            if (mMinusRunningAnimator != null && mMinusRunningAnimator.isRunning()) {
+                mMinusRunningAnimator.cancel();
+            }
+            mMinusRunningAnimator = ValueAnimator.ofFloat(mMinusScale, 1f);
+            mMinusRunningAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mMinusScale = (float) animation.getAnimatedValue();
+                    invalidate();
+                }
+            });
+            mMinusRunningAnimator.start();
+            mMinusScaling = false;
+        }
+    }
+
+    private boolean isInCircle(MotionEvent event) {
+        int circleCenterY = getMeasuredHeight() / 2;
+        return circleCenterY * circleCenterY >= Math.pow(event.getX() - mCircleCenterX, 2) + Math.pow(event.getY() - circleCenterY, 2);
     }
 
     @Override
