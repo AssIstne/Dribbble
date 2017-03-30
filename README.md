@@ -29,3 +29,7 @@ Part of it.
 
 <img src="http://i.imgur.com/p3LkDnR.gif" align="top" width="320">
 <img src="https://github.com/AssIstne/Dribbble/blob/master/snapshot/dash_navigation.gif" width="320">
+
+### [Stepper Touch](https://dribbble.com/shots/3368130-Stepper-Touch) designed by [@Oleg Frolov](https://dribbble.com/Volorf)
+<img src="https://d13yacurqjgara.cloudfront.net/users/108183/screenshots/3368130/stepper_ii.gif" align="top" width="320">
+<img src="http://i.imgur.com/cgByZe7.gif" width="320">
