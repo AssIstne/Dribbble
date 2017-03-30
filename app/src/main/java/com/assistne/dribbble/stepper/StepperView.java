@@ -73,25 +73,31 @@ public class StepperView extends View {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                final int threshold = getMeasuredHeight() / 6;
-                final int middle = getMeasuredWidth() / 2;
-                mCircleCenterX += (event.getX() - mLastX);
-                mLastX = event.getX();
-                invalidate();
-                int delta = (int) (event.getX() - middle);
-                if (delta >= 0) {// 在右侧
-                    if (event.getX() - middle > threshold) {
-                        scalePlusMark();
+                if (isInCircle(event)) {
+                    final int threshold = getMeasuredHeight() / 6;
+                    final int middle = getMeasuredWidth() / 2;
+                    mCircleCenterX += (event.getX() - mLastX);
+                    mLastX = event.getX();
+                    invalidate();
+                    int delta = (int) (event.getX() - middle);
+                    if (delta >= 0) {// 在右侧
+                        if (event.getX() - middle > threshold) {
+                            scalePlusMark();
+                        } else {
+                            restorePlusMark();
+                        }
                     } else {
-                        restorePlusMark();
+                        if (-delta > threshold) {
+                            scaleMinusMark();
+                        } else {
+                            restoreMinusMark();
+                        }
                     }
-                } else {
-                    if (-delta > threshold) {
-                        scaleMinusMark();
-                    } else {
-                        restoreMinusMark();
-                    }
+                    return true;
                 }
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
                 break;
         }
         return super.onTouchEvent(event);
@@ -191,9 +197,9 @@ public class StepperView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawBackground(canvas);
-        drawCircle(canvas);
         drawMinus(canvas);
         drawPlus(canvas);
+        drawCircle(canvas);
     }
 
     private void drawBackground(Canvas canvas) {
@@ -213,6 +219,7 @@ public class StepperView extends View {
     private void drawCircle(Canvas canvas) {
         int r = getMeasuredHeight() / 2;
         canvas.save();
+        canvas.clipPath(mBgPath);
         canvas.translate(mCircleCenterX - r, 0);
         canvas.drawCircle(r, r , r, mCirclePaint);
         canvas.translate(0, (getMeasuredHeight() - mNumberLayout.getHeight()) / 2);
