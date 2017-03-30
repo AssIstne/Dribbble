@@ -92,10 +92,10 @@ public class StepperView extends View {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (isInCircle(event)) {
+                if (isInControlSpan(event)) {
                     final int threshold = getMeasuredHeight() / 6;
                     final int middle = getMeasuredWidth() / 2;
-                    mCircleCenterX += (event.getX() - mLastX);
+                    mCircleCenterX += (event.getX() - mLastX) * 0.4f;
                     mSpring.setCurrentValue(mCircleCenterX);
                     mLastX = event.getX();
                     invalidate();
@@ -209,6 +209,11 @@ public class StepperView extends View {
     private boolean isInCircle(MotionEvent event) {
         int circleCenterY = getMeasuredHeight() / 2;
         return circleCenterY * circleCenterY >= Math.pow(event.getX() - mCircleCenterX, 2) + Math.pow(event.getY() - circleCenterY, 2);
+    }
+
+    private boolean isInControlSpan(MotionEvent event) {
+        int circleCenterY = getMeasuredHeight() / 2;
+        return circleCenterY * circleCenterY * 1.5f >= Math.pow(event.getX() - mCircleCenterX, 2) + Math.pow(event.getY() - circleCenterY, 2);
     }
 
     @Override
