@@ -42,4 +42,5 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.1'
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.0.1'
+    compile 'com.facebook.rebound:rebound:0.3.8'
 }

@@ -14,6 +14,10 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.facebook.rebound.SimpleSpringListener;
+import com.facebook.rebound.Spring;
+import com.facebook.rebound.SpringSystem;
+
 /**
  * Created by assistne on 17/3/28.
  */
@@ -39,6 +43,7 @@ public class StepperView extends View {
     private ValueAnimator mPlusRunningAnimator;
     private boolean mMinusScaling;
     private ValueAnimator mMinusRunningAnimator;
+    private Spring mSpring;
 
     public StepperView(Context context) {
         this(context, null);
@@ -61,6 +66,20 @@ public class StepperView extends View {
         mCirclePaint.setShadowLayer(24, 0, 0, CIRCLE_SHADOW_COLOR);
         // 为了绘制阴影
         setLayerType(LAYER_TYPE_SOFTWARE, mCirclePaint);
+        initSpring();
+    }
+
+    private void initSpring() {
+        SpringSystem springSystem = SpringSystem.create();
+        mSpring = springSystem.createSpring();
+        mSpring.addListener(new SimpleSpringListener() {
+
+            @Override
+            public void onSpringUpdate(Spring spring) {
+                mCircleCenterX = (int) spring.getCurrentValue();
+                invalidate();
+            }
+        });
     }
 
     @Override
@@ -77,6 +96,7 @@ public class StepperView extends View {
                     final int threshold = getMeasuredHeight() / 6;
                     final int middle = getMeasuredWidth() / 2;
                     mCircleCenterX += (event.getX() - mLastX);
+                    mSpring.setCurrentValue(mCircleCenterX);
                     mLastX = event.getX();
                     invalidate();
                     int delta = (int) (event.getX() - middle);
@@ -94,10 +114,17 @@ public class StepperView extends View {
                         }
                     }
                     return true;
+                } else {
+                    restoreMinusMark();
+                    restorePlusMark();
+                    resetCircle();
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                restoreMinusMark();
+                restorePlusMark();
+                resetCircle();
                 break;
         }
         return super.onTouchEvent(event);
@@ -173,6 +200,10 @@ public class StepperView extends View {
             mMinusRunningAnimator.start();
             mMinusScaling = false;
         }
+    }
+
+    private void resetCircle() {
+        mSpring.setEndValue(getMeasuredWidth() / 2);
     }
 
     private boolean isInCircle(MotionEvent event) {
