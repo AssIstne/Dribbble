@@ -7,8 +7,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.text.DynamicLayout;
 import android.text.Layout;
-import android.text.StaticLayout;
+import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -35,7 +36,9 @@ public class StepperView extends View {
     private Paint mMarkPaint;
     private Path mBgPath;
     private Layout mNumberLayout;
+    private SpannableStringBuilder mNumberSpannable;
     private int mNumber;
+    private boolean mCanIncrease;
     private float mMinusScale = 1f;
     private float mPlusScale = 1f;
     private float mLastX;
@@ -66,6 +69,7 @@ public class StepperView extends View {
         mCirclePaint.setShadowLayer(24, 0, 0, CIRCLE_SHADOW_COLOR);
         // 为了绘制阴影
         setLayerType(LAYER_TYPE_SOFTWARE, mCirclePaint);
+        mNumberSpannable = new SpannableStringBuilder(String.valueOf(mNumber));
         initSpring();
     }
 
@@ -88,9 +92,12 @@ public class StepperView extends View {
             case MotionEvent.ACTION_DOWN:
                 mLastX = event.getX();
                 if (isInCircle(event)) {
+                    mCanIncrease = true;
                     return true;
+                } else {
+                    mCanIncrease = false;
+                    return false;
                 }
-                break;
             case MotionEvent.ACTION_MOVE:
                 if (isInControlSpan(event)) {
                     final int threshold = getMeasuredHeight() / 6;
@@ -115,19 +122,16 @@ public class StepperView extends View {
                     }
                     return true;
                 } else {
-                    restoreMinusMark();
-                    restorePlusMark();
-                    resetCircle();
+                    onReleaseCircle();
+                    return false;
                 }
-                break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                restoreMinusMark();
-                restorePlusMark();
-                resetCircle();
-                break;
+                onReleaseCircle();
+                mCanIncrease = false;
+                return true;
         }
-        return super.onTouchEvent(event);
+        return false;
     }
 
     private void scalePlusMark() {
@@ -167,7 +171,7 @@ public class StepperView extends View {
     }
 
     private void scaleMinusMark() {
-        if (!mMinusScaling) {
+        if (!mMinusScaling && mNumber > 0) {
             if (mMinusRunningAnimator != null && mMinusRunningAnimator.isRunning()) {
                 mMinusRunningAnimator.cancel();
             }
@@ -216,17 +220,39 @@ public class StepperView extends View {
         return circleCenterY * circleCenterY * 1.5f >= Math.pow(event.getX() - mCircleCenterX, 2) + Math.pow(event.getY() - circleCenterY, 2);
     }
 
+    private void onReleaseCircle() {
+        restoreMinusMark();
+        restorePlusMark();
+        resetCircle();
+        increaseNumber();
+    }
+
+    private void increaseNumber() {
+        if (mCanIncrease) {
+            final int threshold = getMeasuredHeight() / 6;
+            if (mCircleCenterX - getMeasuredWidth() / 2 >= threshold) {
+                mNumber += 1;
+                mNumberSpannable.replace(0, mNumberSpannable.length(), String.valueOf(mNumber));
+                mCanIncrease = false;
+            } else if (mCircleCenterX - getMeasuredWidth() / 2 <= - threshold && mNumber > 0) {
+                mNumber -= 1;
+                mNumberSpannable.replace(0, mNumberSpannable.length(), String.valueOf(mNumber));
+                mCanIncrease = false;
+            }
+        }
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mCircleCenterX = getMeasuredWidth() / 2;
+        mMarkPaint.setStrokeWidth(getMeasuredHeight() / 30);
         if (mNumberLayout == null) {
             TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
             textPaint.setColor(TEXT_COLOR);
             textPaint.setTextSize(getMeasuredHeight() * 0.45f);
-            mNumberLayout = new StaticLayout(String.valueOf(mNumber), textPaint, getMeasuredHeight(), Layout.Alignment.ALIGN_CENTER, 1, 0, true);
+            mNumberLayout = new DynamicLayout(mNumberSpannable, mNumberSpannable, textPaint, getMeasuredHeight(), Layout.Alignment.ALIGN_CENTER, 1, 0, true);
         }
-        mMarkPaint.setStrokeWidth(getMeasuredHeight() / 30);
     }
 
     @Override
